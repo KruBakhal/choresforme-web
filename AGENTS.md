@@ -42,7 +42,7 @@ Every ticket runs through the four-agent pipeline with `/build-ticket T#`:
 2. **ui-ux-planner** writes `docs/tickets/T#/02-ui-plan.md`: desktop-first layouts down to 375 px, component tree, tokens, states.
 3. **Approval gate:** the person reviews both plans before any code is written.
 4. **lead-engineer** implements the plans, then runs `npm run lint`, `npm run typecheck` and `npm run build`.
-5. **qa-reviewer** checks the result and saves `docs/tickets/T#/04-qa-report.md`. On NEEDS FIXES, the lead-engineer fixes the issues and QA runs again (at most 3 rounds).
+5. **qa-reviewer** checks the result and saves `docs/tickets/T#/04-qa-report.md`. QA focuses on flows and design and splits issues into BLOCKING and MINOR. On NEEDS FIXES, the lead-engineer fixes the BLOCKING issues and QA runs again (at most 3 rounds); MINOR issues are logged in PROGRESS.md and fixed in T12.
 6. The final report lists the MANUAL browser checks (1280, 1024, 768 and 375 px, console errors) and any open questions.
 7. Agents do not commit; the person commits after their manual check.
 

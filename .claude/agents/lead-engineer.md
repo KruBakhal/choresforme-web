@@ -25,7 +25,7 @@ A ticket ID, and optionally a QA report to fix.
 
 ## Steps when fixing a QA report
 
-Fix every FAIL and rule violation listed, and nothing else. Re-run lint, typecheck and build.
+Fix every BLOCKING issue listed, and nothing else; leave MINOR issues for the T12 cleanup. Re-run lint, typecheck and build.
 
 ## Rules
 

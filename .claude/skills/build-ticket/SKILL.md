@@ -26,7 +26,8 @@ Use the **lead-engineer** subagent with ticket $ARGUMENTS to implement both plan
 ## Stage 4 — QA Engineer
 Use the **qa-reviewer** subagent with ticket $ARGUMENTS. Save its report to `docs/tickets/$ARGUMENTS/04-qa-report.md`.
 
-- Verdict **NEEDS FIXES** → give the report to the **lead-engineer** subagent to fix, then run **qa-reviewer** again. Repeat at most 3 rounds.
+- Verdict **NEEDS FIXES** → give only the BLOCKING issues to the **lead-engineer** subagent to fix, then run **qa-reviewer** again. Repeat at most 3 rounds.
+- MINOR issues never block. Append them to the "Minor issues" section of `docs/tickets/PROGRESS.md` for the T12 cleanup.
 - Still failing after 3 rounds → stop and show the person the remaining issues.
 
 ## Final output
