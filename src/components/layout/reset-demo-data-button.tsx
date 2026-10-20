@@ -5,7 +5,6 @@ import { RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { RESET_DEMO_COPY } from "@/lib/constants";
-import { resetDemoData } from "@/lib/mock/services";
 import { cn } from "@/lib/utils";
 
 type ResetDemoDataButtonProps = {
@@ -31,6 +30,8 @@ export function ResetDemoDataButton({
     setFailed(false);
     setPending(true);
     try {
+      /* Loaded on click so public pages with the Footer don't bundle the mock layer. */
+      const { resetDemoData } = await import("@/lib/mock/services");
       await resetDemoData();
       window.location.reload();
     } catch {

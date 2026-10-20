@@ -11,7 +11,6 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Chores For Me",
-  description: "Chores For Me connects customers with verified local workers for home chores.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

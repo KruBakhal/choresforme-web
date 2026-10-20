@@ -1,17 +1,28 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, type LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { HEADER_ACTIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 type MobileCtaBarProps = {
+  /** Button label. Defaults to "Post a job". */
+  label?: string;
+  /** Button target. Defaults to the job builder. */
+  href?: string;
+  /** Leading icon. Defaults to `Plus`. */
+  icon?: LucideIcon;
   /** Styleguide only: render in flow and at every width. */
   preview?: boolean;
 };
 
-/** Sticky "Post a job" bar for mobile (< 768 px). Rendered last by Footer. */
-export function MobileCtaBar({ preview = false }: MobileCtaBarProps) {
+/** Sticky CTA bar for mobile (< 768 px), "Post a job" by default. Rendered last by Footer. */
+export function MobileCtaBar({
+  label = HEADER_ACTIONS.postJob.label,
+  href = HEADER_ACTIONS.postJob.href,
+  icon: Icon = Plus,
+  preview = false,
+}: MobileCtaBarProps) {
   return (
     <div
       className={cn(
@@ -20,9 +31,9 @@ export function MobileCtaBar({ preview = false }: MobileCtaBarProps) {
       )}
     >
       <Button asChild className="w-full">
-        <Link href={HEADER_ACTIONS.postJob.href}>
-          <Plus aria-hidden />
-          {HEADER_ACTIONS.postJob.label}
+        <Link href={href}>
+          <Icon aria-hidden />
+          {label}
         </Link>
       </Button>
     </div>

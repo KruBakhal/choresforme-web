@@ -4,8 +4,8 @@
 | --- | --- | --- | --- |
 | T1 Scaffold | Done | 48c6c12 | Full fixed stack installed; shadcn on Radix (radix-nova); tokens via Tailwind v4 `@theme inline` in `src/styles/globals.css`; `agentRules: false` in next.config |
 | T2 Design system | Done | 043f904 | Brand from choresforme.com: #00ABF6, Poppins 400/600, logo mark in `public/brand/`; light only; Header, Footer, AppShell, SideNav, BottomNav, state components; `/styleguide` (noindex, unlinked) |
-| T3 Data + mock layer | Done | | Spec types, constants, seed (4 categories, 2 customers, 6 workers, 12 jobs, 2 templates, Visa 4242), persisted mock DB, all spec services plus extras, one-shot `?mockError=1`, 3 SSR-safe stores, Zod schemas + resolver, `track()` stub, Footer "Reset demo data", `/dev/mock` (noindex) |
-| T4 Marketing pages | Not started | | |
+| T3 Data + mock layer | Done | bfb1b4d | Spec types, constants, seed (4 categories, 2 customers, 6 workers, 12 jobs, 2 templates, Visa 4242), persisted mock DB, all spec services plus extras, one-shot `?mockError=1`, 3 SSR-safe stores, Zod schemas + resolver, `track()` stub, Footer "Reset demo data", `/dev/mock` (noindex) |
+| T4 Marketing pages | Done | | Landing, `/services/[category]` (4 slugs, real 404), `/how-it-works`, `/workers`, `/faq` (searchable, hash-open), `/privacy` and `/terms` placeholders (noindex); robots + sitemap; live Play URLs and support contact; Footer Services column |
 | T5 Auth | Not started | | |
 | T6 Job builder 1–5 | Not started | | |
 | T7 Job builder 6–8 | Not started | | |
@@ -42,6 +42,16 @@
 - `/styleguide` footer at 1280 and 375 px: Reset placement; white outline on keyboard focus, none on mouse click; native confirm, where Cancel does nothing and OK reloads with the seed restored.
 - All routes: no console errors or warnings.
 
+### T4
+- `/workers` at 375 px, tab in front: hard-reload on throttled "Slow 4G". The bar should read "Create worker account"; note whether "Post a job" flashes first. Open it in a background tab and switch to it: the bar should read "Create worker account".
+- `/` at 375 px: h1, both CTAs and the picker sit above the sticky bar, with the visual below. At 768 px: the phone frame (about 207 px) and ID-Card badges don't clip. At 1024 and 1280 px: connector lines join the steps, the worker visual is on the left, and the CTA band has text left and buttons right.
+- `/services/*` at 1280 and 375 px: the brand panel and icon tile look balanced; the breadcrumb wraps cleanly at 375; Custom's single wide card reads well.
+- `/how-it-works` at 1024 px: the 4 worker columns (about 216 px each) have connectors, and link labels wrap cleanly.
+- `/faq` at 375 and 1280 px: search, "zzz" shows the empty state, Clear search works. Changing the hash on the page smooth-scrolls the item clear of the header and expands it. At 1280 the contact card stays sticky. With reduced motion, nothing animates.
+- `/privacy` and `/terms` at 375 px: the notice card holds; the email wraps only after "@"; the Footer clears the sticky bar.
+- Footer at 768–820 px: the 2×2 group grid holds; the app button text fits; the email wraps only after "@".
+- All routes: keyboard Tab shows the 2 px outline everywhere (white in the CTA band and Footer) and the skip link works; the console stays empty apart from the expected 404 prefetches of `/login`, `/signup` and `/post-job/*` until T5/T6.
+
 ## Minor issues (fix in T12)
 
 - [T1] `.prettierignore` does not list root markdown files (AGENTS.md, CLAUDE.md, README.md); `npm run format` rewrites their line endings and `format:check` fails on AGENTS.md. Fix: ignore `*.md` at root.
@@ -54,16 +64,21 @@
 - [T2] `/styleguide` Footer preview at about 800 px: the "Customer app on Google Play" button text overflows its border, and the support email wraps mid-word (found during T3).
 - [T3] `src/app/dev/mock/_components/dev-mock-panel.tsx:64`: the sticky Stores aside grows past the viewport (802 px at 1280×800) once a session exists; drop `lg:sticky` in that case, as the UI plan says.
 - [T3] `src/app/dev/mock/_components/use-service-call.ts:38`: "Resolved in N ms" includes render overhead (up to 812 ms); measure only the service promise.
-- [T3] `src/components/layout/reset-demo-data-button.tsx:8`: statically imports `services.ts`, so every page with the Footer bundles the whole mock layer; import it dynamically in the click handler.
+- [T3, fixed in T4] `reset-demo-data-button.tsx` static import of `services.ts` (now a dynamic import).
 - [T3] `src/lib/validation/payment.ts:52`: the Amex CVC-length check lacks `{ when: always }`, so its error appears only after the other card errors are fixed.
 - [T3] The T1 `.gitkeep` files in `src/lib/mock`, `src/lib/store` and `src/lib/validation` are no longer needed.
+- [T4] `src/components/marketing/breadcrumbs.tsx:27`: the "Home" breadcrumb link is 42 × 44 px; add `min-w-11`.
+- [T4] `src/app/(marketing)/layout.tsx:18`: a full load of `/workers` may flash "Post a job" for one frame before the swap (and keeps it in a background tab or with JS off). Verify by eye; consider a server-resolved bar.
+- [T4] `src/components/marketing/faq-accordion.tsx:138`: "Clear search" sits inside the `aria-live` results line and is re-announced on every count change; move it out of the `<p>`.
+- [T4] `src/lib/constants.ts:752`: `SITE_URL` points robots/sitemap at choresforme.com; set it to the demo host in T12.
+- [T4] Seed cities are Austin/Dallas/Houston (TX), but the live site points to Utah (801 phone, Utah sole-proprietor guide). Switch the seed and served state to Utah (for example Salt Lake City, Provo, Ogden) unless the client says otherwise.
 
 ## Open questions
 
 - [T1] Temporary home meta description "Chores For Me connects customers with verified local workers for home chores." — T4 should replace with client-approved copy.
 - [T2] Headings on choresforme.com use GothamPro (commercial). The MVP uses Poppins everywhere. Does the client hold a web licence for GothamPro they want used?
 - [T2] Brand blue #00ABF6 fails AA with white text, so filled brand buttons use dark text (#333333). Is the client OK with this, or do they want a darker brand shade added?
-- [T2] Google Play URLs for the Customer and Worker apps are placeholders (`#`) in `constants.ts`. Need the real links.
+- [T2, resolved in T4] Google Play URLs now come from the live site (`com.choresforme.user`, `com.choresforme.worker`).
 - [T2] Customer nav "Jobs" points to `/dashboard/jobs`, a list route not in the Tech Spec route map (T8 adds it). Confirm.
 - [T2] `/styleguide` stays reachable in the hosted demo (noindex). Confirm, or hide it in production.
 - [T3] Sub-services are provisional: House Cleaning = Standard Cleaning, Deep Cleaning, Move-in / Move-out, Window Cleaning, Other; Item Disposal = Furniture Removal, Appliance Removal, Yard Waste, Garage Cleanout, Other; Custom = Other only. Is the Outdoor list complete? Need the exact lists from the apps.
@@ -73,3 +88,9 @@
 - [T3] The board's distance is a deterministic mock derived from ZIP codes (the data model has no coordinates).
 - [T3] Provisional copy not in the spec: the rejected-ID reason "The ID photo was unclear. Please upload a new photo.", "Enter your password", "Photos must be JPG, PNG, HEIC or WebP", "This job can't be changed right now", "Log in to continue", and the demo account labels. There is also a default worker radius of 25 miles.
 - [T3] Demo social identities: Google = Alex Rivera (`alex.google@choresforme.test`), Facebook = Sam Lee (`sam.facebook@choresforme.test`).
+- [T4] The live FAQ says a 5% cancellation charge applies after a worker accepts and a deposit is made. The PRD keeps the fee rule open and the MVP charges on completion, so the web FAQ says the amount "is being confirmed". Confirm the fee rule.
+- [T4] The live FAQ says customers can't add a new job while one is in progress. That rule is not in the PRD and is not enforced in the MVP. Keep or drop?
+- [T4] The business appears to be Utah-based (live phone (801) 948-0847 and the Utah sole-proprietor guide). Which states and cities launch first? (See the Texas seed above.)
+- [T4] Legal pages are placeholders linking to the live privacy policy and terms. The client needs to supply final web-product legal text.
+- [T4] City SEO pages from the PRD have no route in the Tech Spec; they are out of scope for the MVP.
+- [T4] All marketing copy, page titles and descriptions, category descriptions, How It Works steps, the hero "Phone, ID and insurance verified" pill and the category icons are provisional and need client approval.

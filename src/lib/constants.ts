@@ -1,10 +1,23 @@
 import {
+  BadgeCheck,
   BriefcaseBusiness,
+  CalendarCheck,
   ClipboardList,
   History,
   House,
+  IdCard,
+  ListChecks,
+  MapPin,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Star,
+  Trash2,
+  Trees,
+  UserPlus,
   UserRound,
   Wallet,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
@@ -42,6 +55,9 @@ export const A11Y = {
   mainNav: "Main",
   footerNav: "Footer",
   dashboardNav: "Dashboard",
+  newTab: "(opens in a new tab)",
+  breadcrumb: "Breadcrumb",
+  onThisPage: "On this page",
 } as const;
 
 // Header
@@ -62,13 +78,19 @@ export const HEADER_ACTIONS = {
 
 // Footer
 
-/* Placeholders until the client provides the real Google Play URLs. */
-export const PLAY_STORE_CUSTOMER_URL_PLACEHOLDER = "#";
-export const PLAY_STORE_WORKER_URL_PLACEHOLDER = "#";
+/* Google Play listings from the live choresforme.com (T4 decision 13). */
+export const PLAY_STORE_CUSTOMER_URL =
+  "https://play.google.com/store/apps/details?id=com.choresforme.user";
+export const PLAY_STORE_WORKER_URL =
+  "https://play.google.com/store/apps/details?id=com.choresforme.worker";
 
-export const SUPPORT_EMAIL = "support@choresforme.com";
+/* Support contact from the live choresforme.com (T4 decision 12). */
+export const SUPPORT_EMAIL = "choresformesupport@protonmail.com";
+export const SUPPORT_PHONE = "(801) 948-0847";
+export const SUPPORT_PHONE_HREF = "tel:+18019480847";
 
 export const FOOTER = {
+  servicesHeading: "Services",
   appHeading: "Get the app",
   supportHeading: "Support",
   legalHeading: "Legal",
@@ -715,3 +737,505 @@ export const DEV_MOCK_COPY = {
     clear: "Clear",
   },
 } as const;
+
+/*
+ * ---------------------------------------------------------------------------
+ * T4: marketing pages. Copy marked [provisional] needs client approval
+ * (T4 decisions 2, 3 and 18). FAQ answers come from the live choresforme.com,
+ * lightly copy-edited (T4 decision 1).
+ * ---------------------------------------------------------------------------
+ */
+
+// Site
+
+/** Origin used by robots.txt and sitemap.xml [provisional until the demo host is known]. */
+export const SITE_URL = "https://choresforme.com";
+
+// Routes
+
+export const WORKER_SIGNUP_HREF = "/signup?role=worker";
+export const WORKERS_HREF = "/workers";
+export const HOW_IT_WORKS_HREF = "/how-it-works";
+export const FAQ_HREF = "/faq";
+export const SERVICES_ANCHOR_HREF = "/#services";
+
+/** Job builder with the category pre-selected (skips step 1). */
+export const postJobForCategory = (id: CategoryId) => `/post-job/services?category=${id}`;
+export const serviceHref = (id: CategoryId) => `/services/${id}`;
+
+// Categories (marketing)
+
+export const CATEGORY_ICONS: Record<CategoryId, LucideIcon> = {
+  outdoor: Trees,
+  cleaning: Sparkles,
+  disposal: Trash2,
+  custom: Wrench,
+};
+
+/** One short line per category [provisional]. */
+export const CATEGORY_DESCRIPTIONS: Record<CategoryId, string> = {
+  outdoor: "Lawn mowing, weeding, planting and gutters.",
+  cleaning: "Standard, deep and move-out cleaning.",
+  disposal: "Furniture, appliances, yard waste and cleanouts.",
+  custom: "Describe any chore that doesn't fit the others.",
+};
+
+// Shared marketing types
+
+export type MarketingStep = {
+  title: string;
+  body: string;
+  href?: string;
+  linkLabel?: string;
+};
+
+export type MarketingPoint = { icon: LucideIcon; title: string; body: string };
+
+// How it works [provisional] (T4 decision 2)
+
+const CUSTOMER_STEPS: readonly MarketingStep[] = [
+  {
+    title: "Describe the job",
+    body: "Choose a category, add the address and a few details, and set your price.",
+    href: HEADER_ACTIONS.postJob.href,
+    linkLabel: "Post a job",
+  },
+  {
+    title: "Choose a worker or post to the board",
+    body: "Pick a verified worker near you, or post to the job board and the first available worker accepts it.",
+  },
+  {
+    title: "Get it done and rate",
+    body: "Your card is charged when the job is completed. Then you and your worker rate each other.",
+    href: "/faq#payment-timing",
+    linkLabel: "When am I charged?",
+  },
+];
+
+const WORKER_STEPS: readonly MarketingStep[] = [
+  {
+    title: "Create your account",
+    body: "Sign up as a worker with your name, mobile number and date of birth. You must be 18 or older.",
+    href: WORKER_SIGNUP_HREF,
+    linkLabel: "Create worker account",
+  },
+  {
+    title: "Set your area and services",
+    body: "Choose where you work, how far you'll travel and the categories you offer.",
+    href: "/faq#categories",
+    linkLabel: "What categories can I choose?",
+  },
+  {
+    title: "Browse jobs",
+    body: "See open jobs in your area on the job board. Each job goes to the first worker who accepts it.",
+  },
+  {
+    title: "Verify, accept and get paid",
+    body: "Verify your ID and insurance, then accept jobs and get paid to your payout account.",
+    href: "/faq#payouts",
+    linkLabel: "How do I get paid?",
+  },
+];
+
+export const HOW_IT_WORKS_COPY = {
+  title: "How Chores For Me works",
+  intro:
+    "Customers post chores and verified local workers get them done. Here's how each side works.",
+  jumpLinks: [
+    { label: "For customers", href: "#customers" },
+    { label: "For workers", href: "#workers" },
+  ] as const satisfies readonly LinkItem[],
+  customers: {
+    title: "For customers",
+    intro: "Post a job in a few minutes. No account needed to start.",
+    steps: CUSTOMER_STEPS,
+    cta: HEADER_ACTIONS.postJob.label,
+  },
+  workers: {
+    title: "For workers",
+    intro: "Set up once, then pick the jobs that suit you.",
+    steps: WORKER_STEPS,
+    cta: "Create worker account",
+  },
+} as const;
+
+// Landing page (PRD "Landing / home page")
+
+export const LANDING_COPY = {
+  hero: {
+    eyebrow: "Phone, ID and insurance verified",
+    headline: "Your chores, done by verified local pros",
+    supportingLine:
+      "Describe your chore, pick a verified local worker or post it to the job board, and pay when it's done.",
+    primaryCta: HEADER_ACTIONS.postJob.label,
+    secondaryCta: "Earn with Chores For Me",
+    noAccountNote: "No account needed to start a job.",
+    pickerLabel: "Or start with a service",
+  },
+  services: {
+    eyebrow: "Services",
+    title: "What do you need done?",
+    intro: "Pick a category to start your job. You'll add the details next.",
+    tileAction: "Start a job",
+  },
+  howItWorks: {
+    eyebrow: "How it works",
+    title: "Three steps to a finished chore",
+    intro: "From posting to paying, everything happens in your browser.",
+    steps: CUSTOMER_STEPS,
+    fullGuide: "See the full guide",
+  },
+  trust: {
+    eyebrow: "Trust and safety",
+    title: "What “verified” means",
+    points: [
+      {
+        icon: Smartphone,
+        title: "Phone check",
+        body: "Every account confirms a US mobile number with a one-time code.",
+      },
+      {
+        icon: IdCard,
+        title: "Identity verification",
+        body: "Workers upload a photo ID, front and back, before they accept jobs.",
+      },
+      {
+        icon: ShieldCheck,
+        title: "Insurance check",
+        body: "Workers upload an insurance document, which is reviewed before approval.",
+      },
+      {
+        icon: BadgeCheck,
+        title: "Chores ID-Card",
+        body: "Each worker has a Chores ID-Card that shows which checks are complete.",
+      },
+      {
+        icon: Star,
+        title: "Two-way ratings",
+        body: "Customers rate workers and workers rate customers after every job.",
+      },
+    ] as const satisfies readonly MarketingPoint[],
+    ratingRows: ["Customers rate workers", "Workers rate customers"],
+  },
+  workers: {
+    eyebrow: "For workers",
+    title: "Earn with Chores For Me",
+    points: [
+      {
+        icon: MapPin,
+        title: "Set your own area and services",
+        body: "Choose where you work and which categories you offer.",
+      },
+      {
+        icon: ListChecks,
+        title: "Choose the jobs you want",
+        body: "Browse open jobs near you and accept the ones that suit you.",
+      },
+      {
+        icon: Wallet,
+        title: "Get paid to your payout account",
+        body: "Money moves to your payout account when the customer's payment is made.",
+      },
+    ] as const satisfies readonly MarketingPoint[],
+    cta: "Start earning",
+    secondaryLink: "See what you'll need",
+  },
+  faq: {
+    title: "Common questions",
+    seeAll: "See all FAQs",
+    itemIds: ["cancellation-fee", "payouts", "sole-proprietor"],
+  },
+  ctaBand: {
+    title: "Ready to get it done?",
+    body: "Post your first job in a few minutes. No account needed to start.",
+    primary: { label: "Post your first job", href: HEADER_ACTIONS.postJob.href },
+    secondary: { label: "Earn with Chores For Me", href: WORKERS_HREF },
+  },
+} as const;
+
+// Service pages (/services/[category])
+
+export const SERVICE_PAGE_COPY = {
+  eyebrow: "Services",
+  breadcrumbHome: "Home",
+  breadcrumbServices: "Services",
+  primaryCta: HEADER_ACTIONS.postJob.label,
+  howLink: "How it works",
+  includesTitle: "What's included",
+  includesIntro: "Choose one or more of these when you post your job.",
+  otherLabel: "Something else? Describe it in your job",
+  customIncludesBody:
+    "Describe any chore in your own words when you post the job. A verified local worker who offers custom work can take it on.",
+  howTitle: "How it works",
+  howIntro: "Three steps from posting to paying.",
+  otherServicesTitle: "Other services",
+  otherServicesAction: "See service",
+  ctaTitle: (name: string) => `Get help with ${name}`,
+  ctaBody: "Post your job in a few minutes. No account needed to start.",
+  ctaSecondary: { label: "Earn with Chores For Me", href: WORKERS_HREF },
+  /** Per-category copy [provisional]. Sub-service lists come from CATEGORIES. */
+  pages: {
+    outdoor: {
+      metaTitle: "Outdoor Home Service · Chores For Me",
+      metaDescription:
+        "Lawn mowing, weed removal, planting and gutter service from verified local workers. Post your job and pay when it's done.",
+      heading: "Outdoor home services by verified local pros",
+      intro:
+        "Lawn mowing, weed removal, planting and gutter service from verified local workers. Describe the job, set your price and pay when it's done.",
+    },
+    cleaning: {
+      metaTitle: "House Cleaning · Chores For Me",
+      metaDescription:
+        "Standard, deep, move-in or move-out and window cleaning from verified local workers. Post your job and pay when it's done.",
+      heading: "House cleaning by verified local pros",
+      intro:
+        "Standard, deep, move-in or move-out and window cleaning from verified local workers. Describe the job, set your price and pay when it's done.",
+    },
+    disposal: {
+      metaTitle: "Item Disposal · Chores For Me",
+      metaDescription:
+        "Furniture and appliance removal, yard waste and garage cleanouts from verified local workers. Post your job and pay when it's done.",
+      heading: "Item disposal by verified local pros",
+      intro:
+        "Furniture and appliance removal, yard waste and garage cleanouts from verified local workers. Describe the job, set your price and pay when it's done.",
+    },
+    custom: {
+      metaTitle: "Custom Chores · Chores For Me",
+      metaDescription:
+        "Have a chore that doesn't fit a category? Describe it, set your price and a verified local worker can take it on.",
+      heading: "Custom chores by verified local pros",
+      intro:
+        "Have a chore that doesn't fit a category? Describe it in your own words, set your price and a verified local worker can take it on.",
+    },
+  } satisfies Record<
+    CategoryId,
+    { metaTitle: string; metaDescription: string; heading: string; intro: string }
+  >,
+} as const;
+
+// Workers page (/workers, Worker flow step 1 "Why join"; T4 decision 10)
+
+export const WORKERS_PAGE_COPY = {
+  eyebrow: "For workers",
+  title: "Earn with Chores For Me",
+  intro: "Choose your area, choose your jobs and get paid to your payout account.",
+  cta: "Create worker account",
+  /** The sticky mobile bar on /workers (T4 decision 9). */
+  mobileCta: { label: "Create worker account", href: WORKER_SIGNUP_HREF, icon: UserPlus },
+  whyJoin: {
+    title: "Why join",
+    points: [
+      {
+        icon: MapPin,
+        title: "Choose your area",
+        body: "Set your base address and how far you're willing to travel.",
+      },
+      {
+        icon: ListChecks,
+        title: "Choose your jobs",
+        body: "Pick the categories you offer and accept the jobs you want.",
+      },
+      {
+        icon: Wallet,
+        title: "Get paid to your payout account",
+        body: "Add a payout account linked to your bank account or card.",
+      },
+    ] as const satisfies readonly MarketingPoint[],
+  },
+  jobTypes: {
+    title: "Jobs you can choose",
+    intro: "Four categories of home chores. Offer the ones that suit your skills.",
+  },
+  needs: {
+    title: "What you'll need",
+    intro:
+      "You can browse jobs first. Before you accept your first job, complete identity verification.",
+    items: [
+      { icon: IdCard, label: "Photo ID, front and back" },
+      { icon: ShieldCheck, label: "Insurance document" },
+      { icon: Wallet, label: "Payout account, needed before your first payout" },
+      { icon: CalendarCheck, label: "18 or older" },
+    ] as const satisfies readonly { icon: LucideIcon; label: string }[],
+  },
+  statusNote: `Your ID and insurance show as “${VERIFICATION_STATUS_LABELS.under_review}” until approved. Then your Chores ID-Card shows them as “${VERIFICATION_STATUS_LABELS.verified}”.`,
+  faq: {
+    title: "Worker questions",
+    itemIds: ["experience", "payouts", "registration-time", "sole-proprietor"],
+  },
+  ctaBand: {
+    title: "Ready to start earning?",
+    body: "Create your worker account, set your area and start browsing jobs.",
+  },
+} as const;
+
+// FAQ (/faq)
+
+export type FaqAudience = "customer" | "worker";
+
+export type FaqItem = {
+  /** Stable slug: other pages link to /faq#<id>. */
+  id: string;
+  audience: FaqAudience;
+  question: string;
+  answer: string;
+  /** External link shown after the answer (opens in a new tab). */
+  link?: LinkItem;
+};
+
+/** Group order on /faq. */
+export const FAQ_AUDIENCES = ["customer", "worker"] as const satisfies readonly FaqAudience[];
+
+export const FAQ_ITEMS: readonly FaqItem[] = [
+  {
+    id: "cancel-job",
+    audience: "customer",
+    question: "How do I cancel a job?",
+    answer:
+      "Open the job in your dashboard and choose Cancel. You can cancel until the job has started.",
+  },
+  {
+    id: "cancellation-fee",
+    audience: "customer",
+    question: "Is there a fee to cancel a job?",
+    answer:
+      "There's no fee while no worker has accepted your job. After a worker accepts, a cancellation fee may apply; the exact amount is being confirmed.",
+  },
+  {
+    id: "payment-timing",
+    audience: "customer",
+    question: "When am I charged?",
+    answer: "Your card is charged when the job is completed. There are no refunds in this version.",
+  },
+  {
+    id: "tips",
+    audience: "customer",
+    question: "Can I add or change a tip?",
+    answer: "Tipping is coming in a future update.",
+  },
+  {
+    id: "experience",
+    audience: "worker",
+    question: "Do I need experience to work?",
+    answer:
+      "No. We don't ask for work experience; what matters is completing the chores you accept. Experience does help you pick the jobs that suit your strengths.",
+  },
+  {
+    id: "payouts",
+    audience: "worker",
+    question: "How do I get paid?",
+    answer:
+      "Every worker sets up a payout account, which is required. It is linked to your bank account or card, and money moves to it when the customer's payment is made.",
+  },
+  {
+    id: "registration-time",
+    audience: "worker",
+    question: "How long does it take to get registered?",
+    answer: "Not long. Add a few details, verify your ID and insurance, and you're ready to go.",
+  },
+  {
+    id: "categories",
+    audience: "worker",
+    question: "What categories can I choose from?",
+    answer:
+      "There are four: Outdoor Home Service, House Cleaning, Item Disposal and Custom. Custom lets you describe a skill that doesn't fit the other categories.",
+  },
+  {
+    id: "sole-proprietor",
+    audience: "worker",
+    question: "Do I need to register as a sole proprietor?",
+    answer:
+      "Workers on Chores For Me are independent contractors. Many register a sole proprietorship: choose a business name, file an assumed business name (DBA) with your state, and get any licences or permits your work and city need. Requirements vary by state and city.",
+    link: { label: "Read the full guide", href: "https://choresforme.com/sole-proprietor" },
+  },
+];
+
+export const FAQ_COPY = {
+  title: "Frequently asked questions",
+  intro: "Answers for customers and workers.",
+  searchLabel: "Search the FAQ",
+  searchPlaceholder: "Try “payout” or “cancel”",
+  resultsCount: (n: number, total: number) => `Showing ${n} of ${total} questions`,
+  noResultsLine: (q: string) => `No questions match “${q}”`,
+  clearSearch: "Clear search",
+  noResultsTitle: "No questions match your search",
+  noResultsDescription: "Try a different word, or contact support.",
+  groups: {
+    customer: "For customers",
+    worker: "For workers",
+  } satisfies Record<FaqAudience, string>,
+  contact: {
+    title: "Still have questions?",
+    body: "Our support team is happy to help.",
+  },
+} as const;
+
+// Legal placeholders (/privacy, /terms; T4 decision 16)
+
+export const LEGAL_COPY = {
+  eyebrow: "Legal",
+  notice:
+    "The final web version is being prepared. Until it's published, the current policy on choresforme.com applies.",
+  questions: "Questions? Email",
+  privacy: {
+    title: FOOTER.privacy.label,
+    currentLabel: "Read the current Privacy Policy",
+    currentHref: "https://choresforme.com/privacy-policy",
+  },
+  terms: {
+    title: FOOTER.terms.label,
+    currentLabel: "Read the current Terms of Service",
+    currentHref: "https://choresforme.com/terms-of-service",
+  },
+} as const;
+
+// Illustrative previews (decorative sample content, not real records; T4 decision 15)
+
+export const ID_CARD_PREVIEW_SAMPLE = {
+  ariaLabel: "Sample Chores ID-Card",
+  title: "Chores ID-Card",
+  sampleTag: "Sample",
+  name: "Sample worker",
+  note: "Illustrative example",
+  rows: [
+    { icon: Smartphone, label: "Phone", detail: "Mobile number confirmed by SMS code" },
+    { icon: IdCard, label: "ID", detail: "Photo ID checked, 18 or older" },
+    { icon: ShieldCheck, label: "Insurance", detail: "Insurance document reviewed" },
+  ] as const satisfies readonly { icon: LucideIcon; label: string; detail: string }[],
+} as const;
+
+export const JOB_BOARD_PREVIEW_COPY = {
+  title: "Open jobs near you",
+} as const;
+
+// Page metadata [provisional] (T4 decision 18)
+
+export const MARKETING_META = {
+  home: {
+    title: "Chores For Me · Your chores, done by verified local pros",
+    description:
+      "Post a home chore in minutes and get it done by a verified local worker: lawn care, house cleaning, item disposal and more. Pay when it's done.",
+  },
+  howItWorks: {
+    title: "How it works · Chores For Me",
+    description:
+      "How Chores For Me works for customers and workers: describe the job, choose a worker or post to the board, get it done and rate.",
+  },
+  workers: {
+    title: "Earn with Chores For Me · For workers",
+    description:
+      "Choose your area, choose your jobs and get paid to your payout account. Create a Chores For Me worker account.",
+  },
+  faq: {
+    title: "FAQ · Chores For Me",
+    description:
+      "Answers to common questions about cancelling jobs, payment timing, payouts, registration and independent contractor status.",
+  },
+  privacy: {
+    title: "Privacy Policy · Chores For Me",
+    description: "The Chores For Me Privacy Policy for the web is being prepared.",
+  },
+  terms: {
+    title: "Terms · Chores For Me",
+    description: "The Chores For Me Terms for the web are being prepared.",
+  },
+} as const satisfies Record<string, { title: string; description: string }>;
