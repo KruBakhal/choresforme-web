@@ -198,6 +198,11 @@ function addUser(db: MockDb, user: User): void {
   if (user.role === "worker") db.workerProfiles.push(emptyWorkerProfile(user.id));
 }
 
+/** True when this mobile (+1XXXXXXXXXX) passed the SMS code check on this device. */
+function isMobileVerified(db: MockDb, mobile: string): boolean {
+  return (db.verifiedMobiles ?? []).includes(mobile);
+}
+
 /** Starts a 30-day session on this device. */
 async function startSession(user: User): Promise<void> {
   await hydrateStores();
@@ -219,7 +224,11 @@ async function syncSessionUser(user: User): Promise<void> {
 // auth
 
 export const auth = {
-  /** Creates the account and signs in. Any existing email rejects with "You already have an account — log in". */
+  /**
+   * Creates the account and signs in. Any existing email rejects with "You
+   * already have an account — log in". The mobile counts as verified when it
+   * passed `verifyOtp` first (T5 decision 1).
+   */
   signUp(input: SignUpInput): Promise<User> {
     return runService(async () => {
       const data = parseOrFail(signUpSchema, input, "INVALID_INPUT");
@@ -232,7 +241,7 @@ export const auth = {
           lastName: data.lastName,
           email: data.email,
           mobile: data.mobile,
-          phoneVerified: false,
+          phoneVerified: isMobileVerified(db, data.mobile),
           dob: data.dob,
           authProvider: "email",
           createdAt: nowIso(),
@@ -260,13 +269,23 @@ export const auth = {
    * Demo Google / Facebook sign-in with the prefilled demo identity. A new
    * user comes back with an empty `mobile` and `dob` and `phoneVerified:
    * false`; the UI completes them with `users.update` (decision 9).
+   *
+   * `role` is optional (T5 decisions 2 and 3): an existing account whose role
+   * differs from `role` rejects with `ROLE_MISMATCH`, and a new identity
+   * without a role rejects with `ROLE_REQUIRED`. Neither starts a session.
    */
-  loginWithProvider(provider: SocialProvider, role: Role): Promise<User> {
+  loginWithProvider(provider: SocialProvider, role?: Role): Promise<User> {
     return runService(async () => {
       const identity = DEMO_SOCIAL_IDENTITIES[provider];
       const user = updateDb((db) => {
         const existing = findUserByEmail(db, identity.email);
-        if (existing) return existing;
+        if (existing) {
+          if (role && existing.role !== role) {
+            fail("ROLE_MISMATCH", SERVICE_MESSAGES.roleMismatch);
+          }
+          return existing;
+        }
+        if (!role) fail("ROLE_REQUIRED", SERVICE_MESSAGES.roleRequired);
         const created: User = {
           id: newId("usr"),
           role,
@@ -293,11 +312,22 @@ export const auth = {
     });
   },
 
-  /** `true` for 123456, `false` for any other code. A match marks the signed-in user's mobile as verified. */
+  /**
+   * `true` for 123456, `false` for any other code. A match records the mobile
+   * as verified on this device, with or without a session (T5 decision 1), and
+   * marks the signed-in user's mobile as verified when it is theirs.
+   */
   verifyOtp(mobile: string, code: string): Promise<boolean> {
     return runService(async () => {
       if (code.trim() !== DEMO_OTP_CODE) return false;
       const normalised = mobileSchema.safeParse(mobile);
+      if (normalised.success) {
+        updateDb((db) => {
+          if (!isMobileVerified(db, normalised.data)) {
+            db.verifiedMobiles = [...(db.verifiedMobiles ?? []), normalised.data];
+          }
+        });
+      }
       const current = await sessionUser();
       if (normalised.success && current && current.mobile === normalised.data) {
         const updated = updateDb((db) => {

@@ -58,6 +58,7 @@ export const A11Y = {
   newTab: "(opens in a new tab)",
   breadcrumb: "Breadcrumb",
   onThisPage: "On this page",
+  closeDialog: "Close",
 } as const;
 
 // Header
@@ -510,6 +511,8 @@ export const VALIDATION_MESSAGES = {
   /* Not in the spec table [provisional copy]. */
   loginPassword: "Enter your password",
   photoType: "Photos must be JPG, PNG, HEIC or WebP",
+  /* T5 decision 1 [provisional copy]. */
+  mobileUnverified: "Verify your mobile number",
 } as const;
 
 // Service messages (mock service rejections)
@@ -527,6 +530,9 @@ export const SERVICE_MESSAGES = {
   /* Not in the spec [provisional copy]. */
   notAllowed: "This job can't be changed right now",
   signInRequired: "Log in to continue",
+  /* T5 decision 2 and 3 [provisional copy]. */
+  roleMismatch: "Customer and worker accounts are separate",
+  roleRequired: "Choose an account type to continue.",
 } as const;
 
 // Screen state copy (Tech Spec "Screen states", verbatim; used by T5 to T10)
@@ -1239,3 +1245,243 @@ export const MARKETING_META = {
     description: "The Chores For Me Terms for the web are being prepared.",
   },
 } as const satisfies Record<string, { title: string; description: string }>;
+
+/*
+ * ---------------------------------------------------------------------------
+ * T5: auth. Copy marked [provisional] needs client approval (T5 decision 5).
+ * Text marked (verbatim) comes from the PRD or the Tech Spec.
+ * ---------------------------------------------------------------------------
+ */
+
+// Auth routes
+
+export const AUTH_ROUTES = {
+  login: "/login",
+  signUp: "/signup",
+  forgotPassword: "/forgot-password",
+} as const;
+
+/** Each role's home (dashboard). */
+export const ROLE_HOME: Record<Role, string> = {
+  customer: "/dashboard",
+  worker: "/worker/dashboard",
+};
+
+/**
+ * Where a new account goes after sign-up when there is no `next` (T5
+ * decision 9). T9 switches the worker route to `/worker/onboarding/area`.
+ */
+export const POST_SIGN_UP_ROUTE: Record<Role, string> = {
+  customer: ROLE_HOME.customer,
+  worker: ROLE_HOME.worker,
+};
+
+/** One-click password used by the Demo accounts panel (any password works). */
+export const DEMO_PASSWORD = "demo1234";
+
+/** Seconds before "Resend code" is available again (T5 decision 13). */
+export const OTP_RESEND_SECONDS = 30;
+
+// Auth copy [provisional unless marked verbatim]
+
+const PROVIDER_NAMES: Record<SocialProvider, string> = {
+  google: "Google",
+  facebook: "Facebook",
+};
+
+const ROLE_NOUNS: Record<Role, string> = { customer: "customer", worker: "worker" };
+
+export const AUTH_COPY = {
+  meta: {
+    login: "Log in · Chores For Me",
+    signUp: "Sign up · Chores For Me",
+    forgotPassword: "Reset your password · Chores For Me",
+    dashboard: "Dashboard · Chores For Me",
+  },
+  providerName: PROVIDER_NAMES,
+  roleNoun: ROLE_NOUNS,
+  fields: {
+    firstName: "First name",
+    lastName: "Last name",
+    email: "Email",
+    password: "Password",
+    passwordHint: "At least 8 characters, with a letter and a number.",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
+    mobile: "Mobile number",
+    mobilePrefix: "+1",
+    mobilePlaceholder: "(555) 123-4567",
+    mobileHint: "US mobile numbers only. We'll text you a 6-digit code.",
+    dob: "Date of birth",
+    dobHintWorker: "Workers must be 18 or older.",
+    termsLabel: "I accept the Terms and Privacy Policy",
+    termsLinksLead: "Read the",
+    termsLinksJoin: "and the",
+  },
+  login: {
+    title: "Log in",
+    description: "Welcome back to Chores For Me.",
+    demoJump: "Use a demo account",
+    forgotLink: "Forgot password?",
+    submit: "Log in",
+    submitting: "Logging in…",
+    noAccount: "New to Chores For Me?",
+    signUpLink: "Sign up",
+    redirecting: "Taking you to your dashboard…",
+  },
+  social: {
+    google: "Continue with Google",
+    facebook: "Continue with Facebook",
+    monogram: { google: "G", facebook: "f" } satisfies Record<SocialProvider, string>,
+    divider: "or",
+    /** Tech Spec pattern (verbatim): "Signing in with Google (demo)". */
+    dialogTitle: (provider: SocialProvider) => `Signing in with ${PROVIDER_NAMES[provider]} (demo)`,
+    dialogDescription: (provider: SocialProvider) =>
+      `This is a demo. No ${PROVIDER_NAMES[provider]} account is used and nothing leaves this browser.`,
+    identityLabel: "Demo identity",
+    confirm: (firstName: string) => `Continue as ${firstName}`,
+    confirming: "Signing in…",
+    cancel: "Cancel",
+    roleBody: (provider: SocialProvider) =>
+      `This ${PROVIDER_NAMES[provider]} identity is new here. Choose an account type to continue.`,
+    mismatchBody: (name: string, role: Role, otherRole: Role) =>
+      `${name} already has a ${ROLE_NOUNS[role]} account. To create a ${ROLE_NOUNS[otherRole]} account, use a different email.`,
+    signUpWithEmail: "Sign up with email instead",
+    logInInstead: "Log in instead",
+  },
+  picker: {
+    /** PRD (verbatim). */
+    title: "How do you want to use Chores For Me?",
+    description: "Choose one. Customer and worker accounts are separate.",
+    customer: {
+      /** PRD (verbatim). */
+      title: "I need help with chores",
+      description: "Post a job and get matched with verified local workers.",
+      action: "Continue as a customer",
+    },
+    worker: {
+      /** PRD (verbatim). */
+      title: "I want to earn doing chores",
+      description: "Find jobs near you and get paid for the work you choose.",
+      action: "Continue as a worker",
+    },
+    haveAccount: "Already have an account?",
+    logIn: "Log in",
+  },
+  signUp: {
+    roleChip: { customer: "Customer account", worker: "Worker account" } satisfies Record<
+      Role,
+      string
+    >,
+    change: "Change",
+    changeLabel: "Change account type",
+    title: {
+      customer: "Create your account",
+      worker: "Create your worker account",
+    } satisfies Record<Role, string>,
+    description: {
+      customer: "Post jobs and track them in one place.",
+      worker: "Set up your account to start finding jobs near you.",
+    } satisfies Record<Role, string>,
+    submit: { customer: "Create account", worker: "Create worker account" } satisfies Record<
+      Role,
+      string
+    >,
+    submitting: "Creating your account…",
+    haveAccount: "Already have an account?",
+    logIn: "Log in",
+  },
+  completeProfile: {
+    title: "Finish setting up your account",
+    description: (provider: SocialProvider) =>
+      `You signed in with ${PROVIDER_NAMES[provider]}. Add your mobile number and date of birth to finish.`,
+    descriptionEmail: "Add your mobile number and date of birth to finish.",
+    notYou: "Not you? Log out",
+    submit: "Finish sign-up",
+    submitting: "Saving…",
+  },
+  otp: {
+    sendCode: "Send code",
+    sending: "Sending…",
+    sentTo: (mobile: string) => `We sent a 6-digit code to ${mobile}.`,
+    resent: "We sent a new code.",
+    codeLabel: "Enter the 6-digit code",
+    digitLabel: (index: number) => `Digit ${index} of 6`,
+    demoHint: (code: string) => `Demo code: ${code}`,
+    verify: "Verify",
+    verifying: "Verifying…",
+    resend: "Resend code",
+    resendIn: (seconds: number) => `Resend code in ${seconds}s`,
+    changeNumber: "Change number",
+    verified: "Mobile number verified",
+  },
+  forgot: {
+    title: "Reset your password",
+    description:
+      "Enter the email you used to sign up and we'll send you a link to reset your password.",
+    submit: "Send reset link",
+    submitting: "Sending…",
+    backToLogin: "Back to log in",
+    /** Tech Spec (verbatim). */
+    successTitle: "Check your email",
+    /** "If an account exists for {email}, a reset link is on its way." */
+    successBodyLead: "If an account exists for",
+    successBodyTail: ", a reset link is on its way.",
+    demoNote: "Demo only: no email is sent.",
+    differentEmail: "Use a different email",
+  },
+  demo: {
+    title: "Demo accounts",
+    description: "Log in with one click. Any password works.",
+    logIn: "Log in",
+    logInAs: (label: string) => `Log in as ${label}`,
+    loggingIn: "Logging in…",
+    passwordLabel: "Password:",
+    passwordValue: "Any password",
+    otpLabel: "SMS code:",
+  },
+  separate: {
+    title: SERVICE_MESSAGES.roleMismatch,
+    body: {
+      customer:
+        "You're logged in with a customer account. To earn doing chores, create a separate worker account with a different email.",
+      worker:
+        "You're logged in with a worker account. To post jobs, create a separate customer account with a different email.",
+    } satisfies Record<Role, string>,
+    logOutAndCreate: (otherRole: Role) => `Log out and create a ${ROLE_NOUNS[otherRole]} account`,
+    goToDashboard: "Go to my dashboard",
+  },
+  brandPanel: {
+    trustTitle: "Help from verified local workers",
+  },
+  guard: {
+    checking: "Checking your session…",
+  },
+  dashboard: {
+    greeting: (firstName: string) => `Hi, ${firstName}`,
+    roleLine: {
+      customer: "You're logged in with a customer account.",
+      worker: "You're logged in with a worker account.",
+    } satisfies Record<Role, string>,
+    comingSoon: "Dashboard coming soon",
+    description: {
+      customer: "Your jobs, history and account settings will appear here.",
+      worker: "The job board, your jobs and earnings will appear here.",
+    } satisfies Record<Role, string>,
+    workerAction: LANDING_COPY.workers.secondaryLink,
+  },
+  account: {
+    menu: "Account",
+    logOut: "Log out",
+    loggingOut: "Logging out…",
+    logoutError: "We couldn't log you out. Try again.",
+    roleLabel: { customer: "Customer account", worker: "Worker account" } satisfies Record<
+      Role,
+      string
+    >,
+    previewName: "Sample user",
+  },
+  header: {
+    dashboard: "Dashboard",
+  },
+} as const;

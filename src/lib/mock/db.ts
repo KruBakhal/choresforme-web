@@ -31,6 +31,11 @@ export interface MockDb {
   /** Customer id → favourite worker ids. */
   favourites: Record<string, string[]>;
   notifyRequests: NotifyRequest[];
+  /**
+   * Mobiles (+1XXXXXXXXXX) that passed the SMS code check on this device
+   * (T5 decision 1). Optional so databases saved before T5 stay valid.
+   */
+  verifiedMobiles?: string[];
 }
 
 const DB_VERSION = SEED.version;

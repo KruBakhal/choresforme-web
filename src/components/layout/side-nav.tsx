@@ -4,14 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 
+import { LogoutButton } from "@/components/auth/logout-button";
 import { isNavActive } from "@/components/layout/is-nav-active";
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
-import { A11Y, HEADER_ACTIONS, NAV_ITEMS } from "@/lib/constants";
+import { A11Y, AUTH_COPY, HEADER_ACTIONS, NAV_ITEMS } from "@/lib/constants";
+import { selectSessionUser, useSessionHydrated, useSessionStore } from "@/lib/store";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-type SideNavMode = "responsive" | "full" | "icon";
+export type SideNavMode = "responsive" | "full" | "icon";
 
 type SideNavProps = {
   role: Role;
@@ -33,6 +35,7 @@ const MODE = {
     item: "mx-auto size-12 justify-center lg:mx-0 lg:h-12 lg:w-full lg:justify-start lg:px-3",
     cta: "w-12 px-0 lg:w-full lg:px-6",
     ctaWrap: "flex justify-center lg:block",
+    user: "sr-only lg:not-sr-only lg:mb-3 lg:px-3",
   },
   full: {
     width: "w-60",
@@ -42,6 +45,7 @@ const MODE = {
     item: "h-12 w-full px-3",
     cta: "w-full",
     ctaWrap: "",
+    user: "mb-3 px-3",
   },
   icon: {
     width: "w-20",
@@ -51,6 +55,7 @@ const MODE = {
     item: "mx-auto size-12 justify-center",
     cta: "w-12 px-0",
     ctaWrap: "flex justify-center",
+    user: "sr-only",
   },
 } as const;
 
@@ -65,6 +70,13 @@ export function SideNav({
   const current = activeHref ?? pathname;
   const m = MODE[mode];
   const showTitle = mode !== "full";
+  const hydrated = useSessionHydrated();
+  const sessionUser = useSessionStore(selectSessionUser);
+  const userName = preview
+    ? AUTH_COPY.account.previewName
+    : hydrated && sessionUser
+      ? `${sessionUser.firstName} ${sessionUser.lastName}`
+      : null;
 
   return (
     <div
@@ -120,6 +132,23 @@ export function SideNav({
           })}
         </ul>
       </nav>
+
+      {/* Account and Log out (T5 decision 11): the last item, under a rule. */}
+      <div className="mt-auto border-t border-border px-4 py-4">
+        {userName && (
+          <div className={m.user}>
+            <p className="truncate text-body-sm font-semibold text-ink">{userName}</p>
+            <p className="text-caption text-ink-muted">{AUTH_COPY.account.roleLabel[role]}</p>
+          </div>
+        )}
+        <LogoutButton
+          appearance="sidenav"
+          preview={preview}
+          showTitle={showTitle}
+          itemClassName={m.item}
+          labelClassName={m.label}
+        />
+      </div>
     </div>
   );
 }

@@ -5,8 +5,8 @@
 | T1 Scaffold | Done | 48c6c12 | Full fixed stack installed; shadcn on Radix (radix-nova); tokens via Tailwind v4 `@theme inline` in `src/styles/globals.css`; `agentRules: false` in next.config |
 | T2 Design system | Done | 043f904 | Brand from choresforme.com: #00ABF6, Poppins 400/600, logo mark in `public/brand/`; light only; Header, Footer, AppShell, SideNav, BottomNav, state components; `/styleguide` (noindex, unlinked) |
 | T3 Data + mock layer | Done | bfb1b4d | Spec types, constants, seed (4 categories, 2 customers, 6 workers, 12 jobs, 2 templates, Visa 4242), persisted mock DB, all spec services plus extras, one-shot `?mockError=1`, 3 SSR-safe stores, Zod schemas + resolver, `track()` stub, Footer "Reset demo data", `/dev/mock` (noindex) |
-| T4 Marketing pages | Done | | Landing, `/services/[category]` (4 slugs, real 404), `/how-it-works`, `/workers`, `/faq` (searchable, hash-open), `/privacy` and `/terms` placeholders (noindex); robots + sitemap; live Play URLs and support contact; Footer Services column |
-| T5 Auth | Not started | | |
+| T4 Marketing pages | Done | 0d7ae89 | Landing, `/services/[category]` (4 slugs, real 404), `/how-it-works`, `/workers`, `/faq` (searchable, hash-open), `/privacy` and `/terms` placeholders (noindex); robots + sitemap; live Play URLs and support contact; Footer Services column |
+| T5 Auth | Done | | `/login` (demo accounts panel), `/signup` (role picker, form, complete profile), `/forgot-password`; demo Google/Facebook dialog; hand-built inline OTP; `RequireRole` guard with `next`; separate-accounts notice; Log out in AppShell; Header signed-in island; placeholder `/dashboard` and `/worker/dashboard`; `useRevisitKey` resets flows that Cache Components keeps alive. QA passed in round 2 (round 1 had 3 blockers). |
 | T6 Job builder 1–5 | Not started | | |
 | T7 Job builder 6–8 | Not started | | |
 | T8 Customer dashboard | Not started | | |
@@ -52,6 +52,18 @@
 - Footer at 768–820 px: the 2×2 group grid holds; the app button text fits; the email wraps only after "@".
 - All routes: keyboard Tab shows the 2 px outline everywhere (white in the CTA band and Footer) and the skip link works; the console stays empty apart from the expected 404 prefetches of `/login`, `/signup` and `/post-job/*` until T5/T6.
 
+### T5
+- `/login` at 1280 and 375 px: log in and out repeatedly without reloading, through the SideNav and the Account sheet. Each return to `/login` shows a clean, enabled form.
+- `/login` at 375 and 768 px: hard reload and type immediately; no input is lost.
+- `/login` at 1280 px: while "Signing in…" shows, Esc and an overlay click must not close the social dialog.
+- `/signup` at 375 px: after a social sign-in and a log out, "Sign up" shows the enabled picker.
+- `/signup?role=customer` and `?role=worker` at 1280 px: an empty keyboard submit focuses First name; on complete profile it focuses Mobile.
+- `/signup?role=worker` at 375 px on a real phone: fast typing and SMS autofill in the OTP boxes.
+- `/signup` at 1024 and 1280 px: the sticky brand panel (about 824 px tall) shows its end by the bottom of the form.
+- `/` Header at 1280 and 375 px: "Dashboard" replaces Log in / Sign up after hydration with no layout jump.
+- `/dashboard` at 1280 px as a worker: press "Log out and create a customer account" a few times from a cold load. It should land on `/signup?role=customer` (one run did a full page load instead of a client navigation; informational).
+- All auth routes and dashboards at 1280/1024/768/375 px: visual polish against the T5 UI plan; console clean apart from prefetch 404s for later-ticket routes and global font-preload warnings.
+
 ## Minor issues (fix in T12)
 
 - [T1] `.prettierignore` does not list root markdown files (AGENTS.md, CLAUDE.md, README.md); `npm run format` rewrites their line endings and `format:check` fails on AGENTS.md. Fix: ignore `*.md` at root.
@@ -72,6 +84,14 @@
 - [T4] `src/components/marketing/faq-accordion.tsx:138`: "Clear search" sits inside the `aria-live` results line and is re-announced on every count change; move it out of the `<p>`.
 - [T4] `src/lib/constants.ts:752`: `SITE_URL` points robots/sitemap at choresforme.com; set it to the demo host in T12.
 - [T4] Seed cities are Austin/Dallas/Houston (TX), but the live site points to Utah (801 phone, Utah sole-proprietor guide). Switch the seed and served state to Utah (for example Salt Lake City, Provo, Ogden) unless the client says otherwise.
+- [T5] `src/components/auth/terms-field.tsx:21-22` and `src/components/auth/sign-up-page-client.tsx:161, :243`: the "Terms" and "Log in" link targets are 43 px wide (need 44).
+- [T5] `src/components/layout/app-shell.tsx:59`: the customer mobile top bar logo-mark link is 40×44 px (need 44 wide).
+- [T5] `src/components/auth/social-sign-in-dialog.tsx:110`: if a retry fails in the role-choice view, focus goes to a button that only exists in the confirm view, so focus is lost.
+- [T5] `src/components/auth/sign-up-page-client.tsx:63, :77, :134-165`: the role picker flashes while redirecting an incomplete session.
+- [T5] `src/components/auth/social-sign-in-dialog.tsx`: the role-choice sheet is about 689 px tall at 375 and scrolls on a 667 px phone (the plan expected about 520 px).
+- [T5] `src/app/(auth)/login/page.tsx:18-20`: the interactive Suspense fallback is swapped after load, so a very fast first input can be lost.
+- [T5] After social sign-in from `/login`, focus doesn't move to the complete-profile h1 (it lands on BODY).
+- [T5] Global layout: two font-preload console warnings.
 
 ## Open questions
 
@@ -94,3 +114,6 @@
 - [T4] Legal pages are placeholders linking to the live privacy policy and terms. The client needs to supply final web-product legal text.
 - [T4] City SEO pages from the PRD have no route in the Tech Spec; they are out of scope for the MVP.
 - [T4] All marketing copy, page titles and descriptions, category descriptions, How It Works steps, the hero "Phone, ID and insurance verified" pill and the category icons are provisional and need client approval.
+- [T5] Google and Facebook buttons use neutral "G" / "f" letter badges, not official brand marks. Supply approved brand SVGs, following Google's button guidelines?
+- [T5] Provisional auth copy: the separate-accounts notice, role card descriptions, brand panel points, demo dialog text, "Check your email", demo panel text, "Verify your mobile number", "Resend code" (30 s cooldown) / "Change number", and the auth page titles.
+- [T5] Until T9, a newly signed-up worker lands on `/worker/dashboard`; T9 switches this to `/worker/onboarding/area`.

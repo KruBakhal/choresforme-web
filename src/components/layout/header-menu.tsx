@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 
+import { HeaderAuthActions } from "@/components/layout/header-auth-actions";
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -59,12 +60,7 @@ export function HeaderMenu() {
         <Separator className="my-6" />
 
         <div className="flex flex-col gap-3">
-          <Button asChild variant="outline" className="w-full">
-            <Link href={HEADER_ACTIONS.logIn.href}>{HEADER_ACTIONS.logIn.label}</Link>
-          </Button>
-          <Button asChild variant="secondary" className="w-full">
-            <Link href={HEADER_ACTIONS.signUp.href}>{HEADER_ACTIONS.signUp.label}</Link>
-          </Button>
+          <HeaderAuthActions layout="stacked" />
           <Button asChild className="w-full">
             <Link href={HEADER_ACTIONS.postJob.href}>{HEADER_ACTIONS.postJob.label}</Link>
           </Button>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
+import { HeaderAuthActions } from "@/components/layout/header-auth-actions";
 import { HeaderMenu } from "@/components/layout/header-menu";
 import { Logo } from "@/components/layout/logo";
 import { SkipLink } from "@/components/layout/skip-link";
@@ -44,12 +45,7 @@ export function Header({ preview = false }: HeaderProps) {
 
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-2 lg:flex">
-            <Button asChild variant="ghost" size="sm">
-              <Link href={HEADER_ACTIONS.logIn.href}>{HEADER_ACTIONS.logIn.label}</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={HEADER_ACTIONS.signUp.href}>{HEADER_ACTIONS.signUp.label}</Link>
-            </Button>
+            <HeaderAuthActions layout="inline" />
             <Button asChild size="sm">
               <Link href={HEADER_ACTIONS.postJob.href}>{HEADER_ACTIONS.postJob.label}</Link>
             </Button>

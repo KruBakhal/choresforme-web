@@ -191,7 +191,11 @@ export type ServiceErrorCode =
   | "SIGN_IN_REQUIRED"
   | "CARD_FAILED"
   | "UPLOAD_FAILED"
-  | "INVALID_INPUT";
+  | "INVALID_INPUT"
+  /** Social sign-in: the identity's account has the other role (T5 decision 2). */
+  | "ROLE_MISMATCH"
+  /** Social sign-in: a new identity needs a role before an account is created (T5 decision 3). */
+  | "ROLE_REQUIRED";
 
 // Dev-only seed check (decision 13)
 

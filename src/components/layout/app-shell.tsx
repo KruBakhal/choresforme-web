@@ -2,6 +2,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
+import { AccountMenu } from "@/components/auth/account-menu";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Logo } from "@/components/layout/logo";
 import { SideNav } from "@/components/layout/side-nav";
@@ -54,15 +55,19 @@ export function AppShell({
             preview ? "relative" : "sticky top-0",
           )}
         >
-          <Logo />
-          {role === "customer" && (
-            <Button asChild size="sm">
-              <Link href={HEADER_ACTIONS.postJob.href}>
-                <Plus aria-hidden />
-                {HEADER_ACTIONS.postJob.label}
-              </Link>
-            </Button>
-          )}
+          {/* Customer: mark only, so "Post a job" and Account fit at 375 px (T5 UI plan §12.2). */}
+          <Logo variant={role === "customer" ? "mark" : "lockup"} />
+          <div className="flex items-center gap-2">
+            {role === "customer" && (
+              <Button asChild size="sm">
+                <Link href={HEADER_ACTIONS.postJob.href}>
+                  <Plus aria-hidden />
+                  {HEADER_ACTIONS.postJob.label}
+                </Link>
+              </Button>
+            )}
+            <AccountMenu role={role} preview={preview} />
+          </div>
         </header>
 
         <div className={cn("flex flex-1 flex-col xl:flex-row", !preview && "pb-24 md:pb-0")}>
