@@ -4,6 +4,7 @@ import { Smartphone } from "lucide-react";
 import { Container } from "@/components/layout/container";
 import { Logo } from "@/components/layout/logo";
 import { MobileCtaBar } from "@/components/layout/mobile-cta-bar";
+import { ResetDemoDataButton } from "@/components/layout/reset-demo-data-button";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -101,7 +102,10 @@ export async function Footer({ showMobileCta = true, preview = false }: FooterPr
         </div>
 
         <Separator className="my-8 bg-surface/20" />
-        <p className="text-body-sm text-surface">{FOOTER.copyright(year)}</p>
+        <div className="flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between">
+          <p className="text-body-sm text-surface">{FOOTER.copyright(year)}</p>
+          <ResetDemoDataButton className={linkClass} />
+        </div>
       </Container>
       {showMobileCta && <MobileCtaBar preview={preview} />}
     </footer>

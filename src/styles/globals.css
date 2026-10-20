@@ -77,6 +77,8 @@
   --color-ring: var(--ring);
 
   --font-heading: var(--font-sans);
+  /* Monospace: dev JSON boxes only (/dev/mock). */
+  --font-mono: var(--font-mono);
 
   /* Radii: sm 8 · md 12 · lg 20. Anything larger maps to lg. */
   --radius-sm: var(--radius-sm);
@@ -110,6 +112,8 @@
   --radius-md: 12px;
   --radius-lg: 20px;
   --font-sans: var(--font-poppins), system-ui, sans-serif;
+  /* System monospace stack, no font file. Used only by the dev JSON boxes. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
   /* shadcn variables mapped onto the tokens above. --border is shared. */
   --background: var(--surface);
