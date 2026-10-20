@@ -1485,3 +1485,165 @@ export const AUTH_COPY = {
     dashboard: "Dashboard",
   },
 } as const;
+
+/*
+ * ---------------------------------------------------------------------------
+ * T6: job builder steps 1–5. Copy is [provisional] (T6 open question 21)
+ * unless marked verbatim.
+ * ---------------------------------------------------------------------------
+ */
+
+// Job builder steps (PRD labels; "Step N of 8", T6 decision 1)
+
+export type PostJobStep = { step: number; route: string; label: string };
+
+export const POST_JOB_STEPS = [
+  { step: 1, route: "/post-job/category", label: "Category" },
+  { step: 2, route: "/post-job/services", label: "Services" },
+  { step: 3, route: "/post-job/location", label: "Where" },
+  { step: 4, route: "/post-job/details", label: "Details" },
+  { step: 5, route: "/post-job/match", label: "Who" },
+  { step: 6, route: "/post-job/review", label: "Review & Post" },
+  { step: 7, route: "/post-job/payment", label: "Payment" },
+  { step: 8, route: "/post-job/confirmation", label: "Confirmation" },
+] as const satisfies readonly PostJobStep[];
+
+const usd = (value: number) => `$${value.toLocaleString("en-US")}`;
+const hoursText = (hours: number) => `${hours} ${hours === 1 ? "hour" : "hours"}`;
+
+export const JOB_BUILDER_COPY = {
+  meta: {
+    category: "Post a job — Category",
+    services: "Post a job — Services",
+    location: "Post a job — Where",
+    details: "Post a job — Details",
+    match: "Post a job — Who",
+  },
+  stepper: {
+    ariaLabel: "Job progress",
+    status: (step: number, total: number) => `Step ${step} of ${total}`,
+    next: (label: string) => `Next: ${label}`,
+    done: " (done)",
+  },
+  actions: {
+    back: "Back",
+    continue: "Continue",
+  },
+  summary: {
+    title: "Your job",
+    emptyIntro: "Your answers appear here as you go.",
+    notAdded: "Not added yet",
+    rows: {
+      category: "Category",
+      services: "Services",
+      where: "Where",
+      details: "Details",
+      who: "Who",
+    },
+    otherPrefix: "Other: ",
+    photoCount: (count: number) => `${count} ${count === 1 ? "photo" : "photos"}`,
+    estimateLabel: "Estimated total",
+    estimateEmpty: "Set a price in Details",
+    hourlyBreakdown: (rate: string, hours: number) => `${rate}/hr × ${hoursText(hours)}`,
+    chargeNote: "You're charged when the job is done.",
+    barEstimate: (value: string) => `Est. ${value}`,
+    barNoPrice: "No price yet",
+    whoDirect: (name: string) => `Pick a Worker: ${name}`,
+  },
+  category: {
+    title: "What do you need help with?",
+    description: "Choose the type of chore. You can add details next.",
+  },
+  services: {
+    title: "Which services do you need?",
+    description: "Choose all that apply.",
+    change: "Change",
+    changeLabel: "Change category",
+    otherLabel: "What's the other service?",
+    otherHint: `${LIMITS.otherTextMin} to ${LIMITS.otherTextMax} characters.`,
+  },
+  location: {
+    title: "Where is the job?",
+    description: "Enter a US street address. Start typing to see suggestions.",
+    line1: "Street address",
+    city: "City",
+    state: "State",
+    statePlaceholder: "Choose a state",
+    zip: "ZIP code",
+    landmark: "Landmark (optional)",
+    landmarkHint: "Anything that helps the worker find it, like a gate code or a blue fence.",
+    suggestionsLabel: "Address suggestions",
+    searching: "Searching addresses…",
+    found: (count: number) =>
+      `${count} ${count === 1 ? "address" : "addresses"} found. Use the up and down arrows to choose.`,
+    noMatches: "No matching addresses",
+    suggestError: "Suggestions aren't available — enter the address below",
+    filled: (address: string) => `Address filled: ${address}`,
+  },
+  notify: {
+    title: (state: string) => `We're not in ${state} yet`,
+    body: (served: string, city: string) =>
+      `Chores For Me is available in ${served} for now. Leave your email and we'll let you know when we reach ${city}.`,
+    email: "Email",
+    submit: "Notify me",
+    submitting: "Saving…",
+    success: (email: string, state: string) =>
+      `Thanks! We'll email ${email} when we reach ${state}.`,
+    changeAddress: "Use a different address",
+  },
+  details: {
+    title: "Tell us about the job",
+    description: "Describe the work, add photos if they help, and set your price.",
+    descriptionLabel: "Describe the job",
+    descriptionHint: "What needs doing, how much of it, and anything the worker should know.",
+    counter: (count: number, max: number) => `${count} / ${max}`,
+    counterLive: (count: number, max: number) => `${count} of ${max} characters`,
+    photosLabel: "Photos (optional)",
+    photosHint: `Up to ${LIMITS.photosMax} photos. JPG, PNG, HEIC or WebP, under ${
+      LIMITS.fileMaxBytes / (1024 * 1024)
+    } MB each.`,
+    photosEmpty: "Photos help workers understand the job.",
+    choosePhotos: "Choose photos",
+    takePhoto: "Take photo",
+    photoCount: (count: number, max: number) => `${count} of ${max} photos`,
+    photoNote: "Photos stay until you reload or close this tab.",
+    photoAlt: (index: number, total: number, name: string) => `Photo ${index} of ${total}: ${name}`,
+    removePhoto: (index: number, name: string) => `Remove photo ${index}: ${name}`,
+    photoAdded: (count: number, max: number) => `Photo added. ${count} of ${max}.`,
+    photoRemoved: (count: number, max: number) => `Photo removed. ${count} of ${max}.`,
+    addedPhotosLabel: "Added photos",
+    photoFallbackName: "Photo",
+    priceLegend: "Price",
+    pricingTypeLabel: "Pricing type",
+    fixedLabel: "Your price",
+    fixedHint: `Between ${usd(LIMITS.fixedPriceMin)} and ${usd(LIMITS.fixedPriceMax)}.`,
+    rateLabel: "Hourly rate",
+    rateHint: `Between ${usd(LIMITS.hourlyRateMin)} and ${usd(LIMITS.hourlyRateMax)} an hour.`,
+    hoursLabel: "Hours",
+    hoursHint: `Up to ${LIMITS.hoursMax} hours, in half hours.`,
+    hoursPlaceholder: "Choose hours",
+    hoursOption: hoursText,
+    estimateLabel: "Estimated total",
+    estimateEmpty: "Add a rate and hours",
+    estimateLive: (value: string) => `Estimated total ${value}`,
+  },
+  match: {
+    title: "Who should do the job?",
+    description: "Post it to the job board, or pick a verified worker yourself.",
+    boardDescription: "Verified workers near you see the job. The first to accept gets it.",
+    directDescription: "Choose from verified workers who serve your area.",
+    workersTitle: "Choose a verified worker",
+    workersCount: (count: number, city: string) =>
+      `${count} verified ${count === 1 ? "worker serves" : "workers serve"} ${city}.`,
+    favouritesFirst: "Your favourite workers are shown first.",
+    loadingWorkers: "Loading workers…",
+    emptyDescription:
+      "We've switched you to the job board. Choose Pick a Worker again to check for new workers.",
+    favourite: "Favourite",
+    favouriteSr: "Favourite worker",
+    ratingSr: " out of 5",
+    jobsDone: (count: number) => `${count} ${count === 1 ? "job" : "jobs"} done`,
+    badgesLabel: "Verified checks",
+    badges: { phone: "Phone", id: "ID", insurance: "Insurance" },
+  },
+} as const;

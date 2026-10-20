@@ -1,13 +1,14 @@
+import { WorkerCardSkeleton } from "@/components/job/worker-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { STATE_COPY } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-type LoadingVariant = "cards" | "rows" | "detail" | "summary";
+type LoadingVariant = "cards" | "rows" | "detail" | "summary" | "workers";
 
 type LoadingStateProps = {
   /** Pick the variant that matches the final layout of the screen. */
   variant: LoadingVariant;
-  /** Number of cards or rows. Defaults: 3 cards, 5 rows. */
+  /** Number of cards or rows. Defaults: 3 cards (and workers), 5 rows. */
   count?: number;
   /** Screen-reader label. */
   label?: string;
@@ -26,6 +27,17 @@ function CardsSkeleton({ count }: { count: number }) {
           <Skeleton className="h-4 w-full" />
           <Skeleton className="mt-3 h-11 w-1/3" />
         </div>
+      ))}
+    </div>
+  );
+}
+
+/** Step 5 Pick a Worker (T6): worker cards in the worker grid. */
+function WorkersSkeleton({ count }: { count: number }) {
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: count }, (_, i) => (
+        <WorkerCardSkeleton key={i} />
       ))}
     </div>
   );
@@ -106,6 +118,7 @@ export function LoadingState({
         {variant === "rows" && <RowsSkeleton count={count ?? 5} />}
         {variant === "detail" && <DetailSkeleton />}
         {variant === "summary" && <SummarySkeleton />}
+        {variant === "workers" && <WorkersSkeleton count={count ?? 3} />}
       </div>
     </div>
   );

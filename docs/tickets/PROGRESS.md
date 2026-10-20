@@ -6,8 +6,8 @@
 | T2 Design system | Done | 043f904 | Brand from choresforme.com: #00ABF6, Poppins 400/600, logo mark in `public/brand/`; light only; Header, Footer, AppShell, SideNav, BottomNav, state components; `/styleguide` (noindex, unlinked) |
 | T3 Data + mock layer | Done | bfb1b4d | Spec types, constants, seed (4 categories, 2 customers, 6 workers, 12 jobs, 2 templates, Visa 4242), persisted mock DB, all spec services plus extras, one-shot `?mockError=1`, 3 SSR-safe stores, Zod schemas + resolver, `track()` stub, Footer "Reset demo data", `/dev/mock` (noindex) |
 | T4 Marketing pages | Done | 0d7ae89 | Landing, `/services/[category]` (4 slugs, real 404), `/how-it-works`, `/workers`, `/faq` (searchable, hash-open), `/privacy` and `/terms` placeholders (noindex); robots + sitemap; live Play URLs and support contact; Footer Services column |
-| T5 Auth | Done | | `/login` (demo accounts panel), `/signup` (role picker, form, complete profile), `/forgot-password`; demo Google/Facebook dialog; hand-built inline OTP; `RequireRole` guard with `next`; separate-accounts notice; Log out in AppShell; Header signed-in island; placeholder `/dashboard` and `/worker/dashboard`; `useRevisitKey` resets flows that Cache Components keeps alive. QA passed in round 2 (round 1 had 3 blockers). |
-| T6 Job builder 1–5 | Not started | | |
+| T5 Auth | Done | 2aa273b | `/login` (demo accounts panel), `/signup` (role picker, form, complete profile), `/forgot-password`; demo Google/Facebook dialog; hand-built inline OTP; `RequireRole` guard with `next`; separate-accounts notice; Log out in AppShell; Header signed-in island; placeholder `/dashboard` and `/worker/dashboard`; `useRevisitKey` resets flows that Cache Components keeps alive. QA passed in round 2 (round 1 had 3 blockers). |
+| T6 Job builder 1–5 | Done | | Five fixed routes `/post-job/{category,services,location,details,match}`; Stepper ("Step N of 8"), StepLayout with sticky mobile footer, "Your job" summary; SelectableCard, AddressInput (mocked autocomplete), NotifyMeForm, PhotoUploader (5 max, camera on touch), PriceInput (fixed/hourly live total), WorkerCard; persisted draft with step guards and `?category=` skip; `instant = false` on step pages |
 | T7 Job builder 6–8 | Not started | | |
 | T8 Customer dashboard | Not started | | |
 | T9 Worker onboarding | Not started | | |
@@ -64,6 +64,14 @@
 - `/dashboard` at 1280 px as a worker: press "Log out and create a customer account" a few times from a cold load. It should land on `/signup?role=customer` (one run did a full page load instead of a client navigation; informational).
 - All auth routes and dashboards at 1280/1024/768/375 px: visual polish against the T5 UI plan; console clean apart from prefetch 404s for later-ticket routes and global font-preload warnings.
 
+### T6
+- `/post-job/category` at 1280 px, in the DevTools Accessibility pane or a screen reader: each card's name and description are announced, and the hidden Radix inputs are absent. Arrow keys on a physical keyboard select the cards with a visible focus outline. At 375 px: the cards use the row layout.
+- `/post-job/services` with a screen reader: checkbox names and the group label. At 768 and 375 px: the chip row and the "Other" field.
+- `/post-job/location` at 375 px: the suggestion list is not covered by the sticky footer, and "District of Columbia" truncates in the State field. At 1280 px: the list's layering and hover states.
+- `/post-job/details` at 375 px on a real phone: "Take photo" opens the camera and "Choose photos" opens the gallery; a HEIC photo shows as a file tile with its name. At 1280 px: the summary stays sticky while scrolling, and the keyboard opens the native file dialog.
+- `/post-job/match` at 1280 px: badge wrapping on the 218 px cards in 3 columns. At 1024 px: the 2-column grid. At 375 px: the list layout and the empty and error cards. With a screen reader: the loading, count and empty-state announcements.
+- All five steps at every width: the console is clean after a fresh load.
+
 ## Minor issues (fix in T12)
 
 - [T1] `.prettierignore` does not list root markdown files (AGENTS.md, CLAUDE.md, README.md); `npm run format` rewrites their line endings and `format:check` fails on AGENTS.md. Fix: ignore `*.md` at root.
@@ -92,6 +100,12 @@
 - [T5] `src/app/(auth)/login/page.tsx:18-20`: the interactive Suspense fallback is swapped after load, so a very fast first input can be lost.
 - [T5] After social sign-in from `/login`, focus doesn't move to the complete-profile h1 (it lands on BODY).
 - [T5] Global layout: two font-preload console warnings.
+- [T6] `src/components/post-job/match-step.tsx:155`: after Retry succeeds the button disappears and focus falls to `body`; focus the first worker card or the heading.
+- [T6] `src/components/job/job-summary-panel.tsx:25`: fixed ids `job-summary-title` / `job-summary-body` duplicate across kept-alive hidden routes; use `useId()`.
+- [T6] `src/components/post-job/details-step.tsx:106`: the character counter is announced about 1 s after every visit to step 4, before any typing.
+- [T6] `src/components/post-job/match-step.tsx:217`: while the worker list shows its error, the match cards don't carry the error id or `invalid` (UI plan §12).
+- [T6] `src/components/forms/address-input.tsx:170`: `aria-controls` points at the suggestion list even when it isn't rendered.
+- [T6] `src/components/post-job/job-step-route.tsx:43`: pressing browser Back into an old `?category=X` URL re-applies X and clears the services chosen since; `router.replace` to drop the param once applied.
 
 ## Open questions
 
@@ -117,3 +131,6 @@
 - [T5] Google and Facebook buttons use neutral "G" / "f" letter badges, not official brand marks. Supply approved brand SVGs, following Google's button guidelines?
 - [T5] Provisional auth copy: the separate-accounts notice, role card descriptions, brand panel points, demo dialog text, "Check your email", demo panel text, "Verify your mobile number", "Resend code" (30 s cooldown) / "Change number", and the auth page titles.
 - [T5] Until T9, a newly signed-up worker lands on `/worker/dashboard`; T9 switches this to `/worker/onboarding/area`.
+- [T6] Provisional job-builder copy: step headings and labels ("Step N of 8"), summary labels, notify-me text, the photo-dropped-on-reload note, the "Favourite" tag and page titles.
+- [T6] Photos in the job draft are kept only in memory for the session and dropped on reload (object URLs can't be persisted). Acceptable for the demo?
+- [T6] Changing the category clears the chosen services, the "Other" text and any picked worker, but keeps the address and details. Changing the address also clears a picked worker. Confirm.

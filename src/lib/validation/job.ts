@@ -5,6 +5,7 @@ import {
   addressSchema,
   categoryIdSchema,
   descriptionSchema,
+  emailSchema,
   isValidHours,
   isWithinPrice,
   optionalNumberSchema,
@@ -110,6 +111,9 @@ export const detailsSchema = z.object(detailsShape).superRefine(refinePricing, {
 
 /** Step 5 Who: Post to Job Board, or Pick a Worker with a worker selected. */
 export const matchSchema = z.object(matchShape).superRefine(refineMatch, { when: always });
+
+/** Step 3 "notify me" email capture for an address outside the service area. */
+export const notifyMeSchema = z.object({ email: emailSchema });
 
 /** Step 6 Review: the template name is required when Save As Template is ticked. */
 export const reviewSchema = z
