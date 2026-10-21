@@ -6,12 +6,12 @@ import { Info } from "lucide-react";
 
 import { markStepNavigation } from "@/components/flow/step-layout";
 import { servicesText } from "@/components/job/job-summary-panel";
+import { StatusBadge } from "@/components/job/status-badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   CATEGORY_ICONS,
   JOB_BUILDER_COPY,
-  JOB_STATUS_LABELS,
   MATCH_TYPE_LABELS,
   PRICING_TYPE_LABELS,
 } from "@/lib/constants";
@@ -146,12 +146,7 @@ export function ReviewSummary({
         <h2 id={titleId} className="text-h4 font-semibold text-ink">
           {title}
         </h2>
-        {status && (
-          <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-body-sm font-semibold text-ink">
-            <span className="sr-only">{JOB_BUILDER_COPY.confirmation.statusSr}</span>
-            {JOB_STATUS_LABELS[status]}
-          </span>
-        )}
+        {status && <StatusBadge status={status} />}
       </header>
       <div className="mt-2 divide-y divide-border">
         {sections.map((section) => {

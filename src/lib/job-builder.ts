@@ -1,6 +1,8 @@
 import {
   CATEGORIES,
+  JOB_BUILDER_COPY,
   POST_JOB_STEPS,
+  PRICING_TYPE_LABELS,
   SERVED_STATES,
   US_STATES,
   type UsStateCode,
@@ -9,6 +11,7 @@ import type {
   Address,
   Category,
   CategoryId,
+  Job,
   JobDraft,
   PricingType,
   WorkerSummary,
@@ -170,6 +173,23 @@ export function estimatedTotal(
   return roundCents(amount);
 }
 
+/**
+ * A posted job's price for display (T8): the total (fixed price, or rate ×
+ * hours) and the line under it ("Fixed Price" or "$40/hr × 3 hours").
+ */
+export function jobPrice(job: Pick<Job, "pricingType" | "amount" | "hours">): {
+  total: number | null;
+  breakdown: string;
+} {
+  const hourly = job.pricingType === "hourly" && job.hours !== undefined;
+  return {
+    total: estimatedTotal(job.pricingType, job.amount, job.hours),
+    breakdown: hourly
+      ? JOB_BUILDER_COPY.summary.hourlyBreakdown(formatUsd(job.amount), job.hours ?? 0)
+      : PRICING_TYPE_LABELS.fixed,
+  };
+}
+
 /** "$120" for whole dollars, "$120.50" otherwise. */
 export function formatUsd(value: number): string {
   const whole = Number.isInteger(value);
@@ -209,4 +229,60 @@ export function revokePhotoUrls(urls: readonly string[] | undefined): void {
   urls?.forEach((url) => {
     if (url.startsWith("blob:")) URL.revokeObjectURL(url);
   });
+}
+
+// Re-post (T8 rule 21)
+
+/** The job fields a re-post copies, from a posted job or a template's draft. */
+type RepostFields = Pick<
+  Partial<Job>,
+  | "category"
+  | "subServices"
+  | "otherText"
+  | "address"
+  | "description"
+  | "pricingType"
+  | "amount"
+  | "hours"
+  | "matchType"
+  | "workerId"
+>;
+
+/**
+ * The job-draft for a re-post: everything but the photos (their object URLs
+ * are gone), Save As Template unticked (no duplicate template) and
+ * `lastStep` 5, so the customer has to pass Review before Payment.
+ */
+export function jobToDraft(source: RepostFields): JobDraft {
+  const hourly = source.pricingType === "hourly";
+  const direct = source.matchType === "direct";
+  return {
+    category: source.category,
+    subServices: source.subServices ? [...source.subServices] : undefined,
+    otherText: source.otherText,
+    address: source.address ? { ...source.address } : undefined,
+    description: source.description,
+    pricingType: source.pricingType,
+    amount: source.amount,
+    hours: hourly ? source.hours : undefined,
+    matchType: source.matchType,
+    workerId: direct ? source.workerId : undefined,
+    photos: [],
+    savedAsTemplate: false,
+    lastStep: REVIEW_STEP - 1,
+  };
+}
+
+// Dates (browser locale and time zone; call on the client only)
+
+/** "Oct 20, 2026". */
+export function formatDate(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(iso));
+}
+
+/** "Oct 20, 2026, 9:14 AM". */
+export function formatDateTime(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
+    new Date(iso),
+  );
 }

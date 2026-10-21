@@ -141,6 +141,19 @@
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
+/*
+ * T8 mobile action bar: sits exactly on top of the BottomNav (h-16 links plus
+ * its pb-safe padding), and keeps focused fields clear of both fixed bars
+ * (BottomNav + the 68 px action bar + a 12 px margin).
+ */
+@utility bottom-above-nav {
+  bottom: calc(4rem + max(0.75rem, env(safe-area-inset-bottom)));
+}
+
+@utility scroll-mb-bars {
+  scroll-margin-bottom: calc(9rem + max(0.75rem, env(safe-area-inset-bottom)));
+}
+
 @layer base {
   * {
     @apply border-border;

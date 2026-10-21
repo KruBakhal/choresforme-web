@@ -6,7 +6,7 @@ import type { z } from "zod";
 
 import { StepLayout } from "@/components/flow/step-layout";
 import { focusFirstError } from "@/components/forms/focus-first-error";
-import { FormField } from "@/components/forms/form-field";
+import { DescriptionField, type DescriptionForm } from "@/components/forms/description-field";
 import { PhotoUploader } from "@/components/forms/photo-uploader";
 import { JobSummaryPanel } from "@/components/job/job-summary-panel";
 import {
@@ -16,7 +16,6 @@ import {
 } from "@/components/job/price-input";
 import { useDraftAutosave } from "@/components/post-job/use-draft-autosave";
 import { useStepContinue, useStepNavigation } from "@/components/post-job/use-step-navigation";
-import { Textarea } from "@/components/ui/textarea";
 import { JOB_BUILDER_COPY, LIMITS, PHOTO_MIME_TYPES, POST_JOB_STEPS } from "@/lib/constants";
 import { parseAmount, stepRoute } from "@/lib/job-builder";
 import { useJobDraftStore } from "@/lib/store";
@@ -33,8 +32,6 @@ const STEP = 4;
 const TITLE_ID = "details-title";
 const FIELD_ORDER = ["description", "amount", "hours"] as const satisfies readonly (keyof Values)[];
 const COPY = JOB_BUILDER_COPY.details;
-const COUNTER_ID = "description-count";
-const ANNOUNCE_DELAY_MS = 1000;
 
 type LiveValues = Partial<{
   description: string;
@@ -97,20 +94,9 @@ export function DetailsStep() {
     },
   });
   const values = useWatch({ control: form.control });
-  const { errors } = form.formState;
 
   const save = React.useCallback((next: LiveValues) => patchDraft(toPatch(next)), [patchDraft]);
   const autosave = useDraftAutosave(values, save);
-
-  const descriptionLength = (values.description ?? "").length;
-  const [counterAnnouncement, setCounterAnnouncement] = React.useState("");
-  React.useEffect(() => {
-    const timer = setTimeout(
-      () => setCounterAnnouncement(COPY.counterLive(descriptionLength, LIMITS.descriptionMax)),
-      ANNOUNCE_DELAY_MS,
-    );
-    return () => clearTimeout(timer);
-  }, [descriptionLength]);
 
   function onValid(output: Output) {
     autosave.cancel();
@@ -143,35 +129,7 @@ export function DetailsStep() {
       continueLabel={continueLabel}
       summary={<JobSummaryPanel draft={{ ...draft, ...toPatch(values) }} currentStep={STEP} />}
     >
-      <div>
-        <FormField
-          id="description"
-          label={COPY.descriptionLabel}
-          hint={COPY.descriptionHint}
-          error={errors.description?.message}
-          describedByExtra={COUNTER_ID}
-        >
-          {(control) => (
-            <>
-              <Textarea
-                id={control.id}
-                rows={5}
-                maxLength={LIMITS.descriptionMax}
-                aria-required
-                aria-describedby={control.describedBy}
-                aria-invalid={control.invalid || undefined}
-                {...form.register("description")}
-              />
-              <p id={COUNTER_ID} className="text-right text-body-sm text-ink-muted">
-                {COPY.counter(descriptionLength, LIMITS.descriptionMax)}
-              </p>
-            </>
-          )}
-        </FormField>
-        <span className="sr-only" aria-live="polite">
-          {counterAnnouncement}
-        </span>
-      </div>
+      <DescriptionField form={form as unknown as DescriptionForm} />
 
       <Controller
         control={form.control}

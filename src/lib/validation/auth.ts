@@ -71,3 +71,12 @@ export const completeProfileSchema = z
     },
     { when: always },
   );
+
+/** Account profile edit (T8): the sign-up field rules and messages, verbatim. */
+export const profileSchema = z.object({
+  firstName: firstNameSchema,
+  lastName: lastNameSchema,
+  email: emailSchema,
+  mobile: mobileSchema,
+  dob: dobSchema,
+});

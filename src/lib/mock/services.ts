@@ -574,6 +574,21 @@ export const workers = {
     return runService(() => requireWorkerProfile(readDb(), userId));
   },
 
+  /**
+   * Name, rating and ID-Card badges by worker id (T8 open question 3), for
+   * the customer's own jobs. Any verification status; unknown ids are skipped.
+   */
+  getSummaries(ids: string[]): Promise<WorkerSummary[]> {
+    return runService(() => {
+      const db = readDb();
+      return [...new Set(ids)].flatMap((id) => {
+        const user = db.users.find((item) => item.id === id && item.role === "worker");
+        const profile = db.workerProfiles.find((item) => item.userId === id);
+        return user && profile ? [toWorkerSummary(user, profile)] : [];
+      });
+    });
+  },
+
   /** Saves onboarding progress. Also the demo "Approve" action (set both statuses to `verified`). */
   updateOnboarding(userId: string, patch: Partial<WorkerProfile>): Promise<WorkerProfile> {
     return runService(() =>

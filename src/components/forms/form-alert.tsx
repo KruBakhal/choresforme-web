@@ -2,14 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CircleAlert, Info } from "lucide-react";
+import { CircleAlert, CircleCheck, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /** Plain data for a form alert, so a form can hand its alert to the page. */
 export type FormAlertData = {
-  tone: "error" | "info";
+  /** `success` (T8): inline success feedback instead of a toast. */
+  tone: "error" | "info" | "success";
   message: string;
   title?: string;
   /** A link, or (T7, inline auth on Review) a button that switches the form in place. */
@@ -23,6 +24,21 @@ export function nextAlertKey(): number {
   alertSeq += 1;
   return alertSeq;
 }
+
+const TONE_ICONS = { error: CircleAlert, info: Info, success: CircleCheck } as const;
+
+/* Success sits on surface: the success icon fails on brand-soft (T8 UI plan §1.4). */
+const TONE_FRAMES = {
+  error: "border-danger bg-surface",
+  info: "border-input bg-brand-soft",
+  success: "border-input bg-surface",
+} as const;
+
+const TONE_ICON_COLOURS = {
+  error: "text-danger",
+  info: "text-ink",
+  success: "text-success",
+} as const;
 
 type FormAlertProps = {
   tone: FormAlertData["tone"];
@@ -53,7 +69,7 @@ export function FormAlert({
     if (autoFocus) ref.current?.focus();
   }, [autoFocus]);
 
-  const Icon = tone === "error" ? CircleAlert : Info;
+  const Icon = TONE_ICONS[tone];
 
   return (
     <div
@@ -62,14 +78,11 @@ export function FormAlert({
       tabIndex={-1}
       className={cn(
         "flex gap-3 rounded-md border p-4 outline-none focus-visible:outline-2",
-        tone === "error" ? "border-danger bg-surface" : "border-input bg-brand-soft",
+        TONE_FRAMES[tone],
         className,
       )}
     >
-      <Icon
-        className={cn("size-5 shrink-0", tone === "error" ? "text-danger" : "text-ink")}
-        aria-hidden
-      />
+      <Icon className={cn("size-5 shrink-0", TONE_ICON_COLOURS[tone])} aria-hidden />
       <div className="flex min-w-0 flex-col gap-1">
         {title && <p className="text-body font-semibold text-ink">{title}</p>}
         <p className="text-body-sm text-ink">{message}</p>

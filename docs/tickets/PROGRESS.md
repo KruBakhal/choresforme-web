@@ -8,8 +8,8 @@
 | T4 Marketing pages | Done | 0d7ae89 | Landing, `/services/[category]` (4 slugs, real 404), `/how-it-works`, `/workers`, `/faq` (searchable, hash-open), `/privacy` and `/terms` placeholders (noindex); robots + sitemap; live Play URLs and support contact; Footer Services column |
 | T5 Auth | Done | 2aa273b | `/login` (demo accounts panel), `/signup` (role picker, form, complete profile), `/forgot-password`; demo Google/Facebook dialog; hand-built inline OTP; `RequireRole` guard with `next`; separate-accounts notice; Log out in AppShell; Header signed-in island; placeholder `/dashboard` and `/worker/dashboard`; `useRevisitKey` resets flows that Cache Components keeps alive. QA passed in round 2 (round 1 had 3 blockers). |
 | T6 Job builder 1–5 | Done | 727632e | Five fixed routes `/post-job/{category,services,location,details,match}`; Stepper ("Step N of 8"), StepLayout with sticky mobile footer, "Your job" summary; SelectableCard, AddressInput (mocked autocomplete), NotifyMeForm, PhotoUploader (5 max, camera on touch), PriceInput (fixed/hourly live total), WorkerCard; persisted draft with step guards and `?category=` skip; `instant = false` on step pages |
-| T7 Job builder 6–8 | Done | | `/post-job/review` (ReviewSummary with Edit links and `?from=review`, inline sign-up/log-in/social as customer, Save As Template), `/post-job/payment` (saved cards or new card, brand + last 4 only, charged on completion, no refunds), `/post-job/confirmation` (posted job, what happens next, template offer, AppPrompt with Android Play button and 7-day dismiss). A guest can post a job end to end. |
-| T8 Customer dashboard | Not started | | |
+| T7 Job builder 6–8 | Done | 08e2268 | `/post-job/review` (ReviewSummary with Edit links and `?from=review`, inline sign-up/log-in/social as customer, Save As Template), `/post-job/payment` (saved cards or new card, brand + last 4 only, charged on completion, no refunds), `/post-job/confirmation` (posted job, what happens next, template offer, AppPrompt with Android Play button and 7-day dismiss). A guest can post a job end to end. |
+| T8 Customer dashboard | Done | | `/dashboard` (Home with rail: templates and app banner), `/dashboard/jobs`, `/dashboard/jobs/[id]` (StatusBadge; edit, cancel with fee-to-be-confirmed dialog, rate 1–5 once, favourite, receipt, re-post), `/dashboard/jobs/[id]/edit`, `/dashboard/history` (table, cards below 768), `/dashboard/account` (profile with OTP on mobile change, cards, favourites, templates); `workers.getSummaries` added; inline success status (no toast) |
 | T9 Worker onboarding | Not started | | |
 | T10 Worker dashboard | Not started | | |
 | T11 Hand-off + analytics | Not started | | |
@@ -79,6 +79,17 @@
 - `/post-job/confirmation?job=job-unknown` at 375 and 1280 px: the "We couldn't find this job" card, with stacked buttons at 375.
 - Every T7 route at all four widths: no console errors or warnings.
 
+### T8
+- `/dashboard` at 1280 px: check the rail (template rows, banner in rail layout) on a fresh session. At 1024, 768 and 375 px: stacked rail spacing; nothing hidden behind the BottomNav.
+- `/dashboard/jobs` at 1280 and 768 px: card footers (worker and rating against the price) in 300 px columns; the hover border.
+- `/dashboard/jobs/[id]` at 1280 px: the 614 px sticky card on job-006 fits a 720 px-tall laptop screen; StatusBadge colours look right. At 1024 px: the narrow details column. At 375 px on a real iPhone: the action bar sits flush on the BottomNav with the safe area, and the last section scrolls clear. Hard reload on Slow 4G: the no-nav skeleton flash. Cancel bottom sheet at 375: its look; press Esc during "Cancelling…" and the dialog should stay open.
+- `/dashboard/jobs/job-011#rate`: star focus ring, hover tint, filled stars and the "4 out of 5" read-out.
+- `/dashboard/jobs/[id]/edit` at 375 px with errors and the out-of-area note showing: Tab through the form; the sticky bar never covers the focused field.
+- `/dashboard/history`: the 4-column table at 768 px; card buttons wrap at 375 px.
+- `/dashboard/account` at 1280 px: two-column balance. At 375 px: Profile edit with the code panel open; Add a card with errors.
+- `/post-job/confirmation` at 375 px: the summary header wraps cleanly with the new StatusBadge.
+- Any page on `next start` in a fresh browser profile: the console is clean (QA saw a stale "link preload but not used" CSS warning, most likely a cached prefetch).
+
 ## Minor issues (fix in T12)
 
 - [T1] `.prettierignore` does not list root markdown files (AGENTS.md, CLAUDE.md, README.md); `npm run format` rewrites their line endings and `format:check` fails on AGENTS.md. Fix: ignore `*.md` at root.
@@ -118,6 +129,13 @@
 - [T7] `src/components/post-job/confirmation-step.tsx:436` (with `payment-step.tsx:174` and `services.ts:435`): after a reload, template status comes only from `job.savedAsTemplate`. A save that failed during posting still reads "Saved as a template", and a template saved from the Confirmation offer is offered again (possible duplicate).
 - [T7] `src/components/flow/step-layout.tsx:172`: at 375 px "Posting your job…" wraps to two lines (the button grows to 73 px).
 - [T7] `src/components/post-job/review-auth-panel.tsx:185`: "Not you? Log out" on the finish-profile card has no `onError`, so a failed logout is silent.
+- [T8] `src/components/dashboard/history-list.tsx:226`: the table "Rate" link is 34 px wide (44 tall); add `min-w-11`.
+- [T8] `src/components/dashboard/payment-methods-section.tsx:124`: "Add a card" always has `aria-expanded={false}` and no `aria-controls`.
+- [T8] `src/components/dashboard/template-list.tsx:139`: in the 1280 px rail the template text column is 103 px, so the price wraps to 4 lines; stack the Re-post button under the text in the rail.
+- [T8] `src/components/job/job-detail.tsx:28`: at 1024 px the details column is 353 px but rows stay three-column (about 180 px for values).
+- [T8] `src/app/dashboard/layout.tsx:20`: the Suspense fallback has no side nav or skip link, so on a hard load of `/dashboard/jobs/[id]` the nav pops in and content shifts 240 px.
+- [T8] `src/components/dashboard/cancel-job-dialog.tsx:152,160`: during "Cancelling…" both buttons are disabled and keyboard focus drops out of the open dialog.
+- [T8] `src/components/dashboard/job-detail-view.tsx:123`: after a NOT_ALLOWED reload, the worker and favourites aren't refetched if the job's status changed.
 
 ## Open questions
 
@@ -149,3 +167,6 @@
 - [T7] Provisional checkout copy: the demo card note ("Demo only — don't enter a real card. Try 4242 4242 4242 4242."), "You're charged when the job is done. There are no refunds", the what-happens-next lines for board and direct jobs, the template messages, and the AppPrompt text beyond the PRD line.
 - [T7] Confirmation shows only a photo count, because photo URLs are revoked when the draft clears. Dashboards (T8) show placeholders.
 - [T7] The payment method used isn't recorded on the job (the Job type has no field for it). Fine for the demo?
+- [T8] Provisional dashboard copy (`DASHBOARD_COPY`): empty states such as "No active jobs right now", the "Your changes are saved." message, receipt labels, and "This email is already used by another account".
+- [T8] Out of scope because no service exists for them: removing a card, setting a default card, and renaming or deleting a template. The PRD's Account items Payment Analytics, Ratings, Notifications, Settings and the notification bell are also not built. Confirm these are post-MVP.
+- [T8] The mock job services don't check `customerId`; the UI hides other customers' jobs ("We couldn't find this job"). Fine for the demo; the real backend must enforce it.

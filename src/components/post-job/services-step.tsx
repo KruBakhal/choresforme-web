@@ -2,22 +2,19 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import type { z } from "zod";
 
-import { SelectableCard } from "@/components/flow/selectable-card";
 import { markStepNavigation, StepLayout } from "@/components/flow/step-layout";
 import { focusFirstError } from "@/components/forms/focus-first-error";
-import { FieldError, FormField } from "@/components/forms/form-field";
+import { SubServicesField, type SubServicesForm } from "@/components/forms/sub-services-field";
 import { JobSummaryPanel } from "@/components/job/job-summary-panel";
 import { useDraftAutosave } from "@/components/post-job/use-draft-autosave";
 import { useStepContinue, useStepNavigation } from "@/components/post-job/use-step-navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   CATEGORY_ICONS,
   JOB_BUILDER_COPY,
-  LIMITS,
   OTHER_SUB_SERVICE,
   POST_JOB_STEPS,
 } from "@/lib/constants";
@@ -71,9 +68,6 @@ export function ServicesStep() {
     },
   });
   const values = useWatch({ control: form.control });
-  const { errors } = form.formState;
-  const servicesError = errors.subServices?.message;
-  const otherSelected = (values.subServices ?? []).includes(OTHER_SUB_SERVICE);
 
   const save = React.useCallback(
     (next: Parameters<typeof toPatch>[0]) => patchDraft(toPatch(next)),
@@ -128,74 +122,13 @@ export function ServicesStep() {
         </Button>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Controller
-          control={form.control}
-          name="subServices"
-          render={({ field }) => {
-            const selected = field.value ?? [];
-            return (
-              <div
-                role="group"
-                aria-labelledby={TITLE_ID}
-                aria-describedby={servicesError ? ERROR_ID : undefined}
-                className="grid grid-cols-1 gap-3 sm:grid-cols-2"
-              >
-                {category.subServices.map((service, index) => {
-                  const isOther = service === OTHER_SUB_SERVICE;
-                  const checked = selected.includes(service);
-                  return (
-                    <React.Fragment key={service}>
-                      <SelectableCard
-                        ref={index === 0 ? field.ref : undefined}
-                        type="checkbox"
-                        layout="row"
-                        value={service}
-                        title={service}
-                        checked={checked}
-                        onCheckedChange={(next) => {
-                          const updated = next
-                            ? category.subServices.filter(
-                                (item) => item === service || selected.includes(item),
-                              )
-                            : selected.filter((item) => item !== service);
-                          field.onChange(updated);
-                          if (isOther && !next) form.clearErrors("otherText");
-                        }}
-                        onBlur={field.onBlur}
-                        invalid={!!servicesError && !checked}
-                        describedBy={servicesError ? ERROR_ID : undefined}
-                        controls={isOther ? OTHER_ID : undefined}
-                      />
-                      {isOther && otherSelected && (
-                        <FormField
-                          id={OTHER_ID}
-                          label={COPY.otherLabel}
-                          hint={COPY.otherHint}
-                          error={errors.otherText?.message}
-                          className="sm:col-span-2"
-                        >
-                          {(control) => (
-                            <Input
-                              id={control.id}
-                              aria-describedby={control.describedBy}
-                              aria-invalid={control.invalid || undefined}
-                              maxLength={LIMITS.otherTextMax}
-                              autoComplete="off"
-                              {...form.register("otherText")}
-                            />
-                          )}
-                        </FormField>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            );
-          }}
-        />
-        {servicesError && <FieldError id={ERROR_ID} message={servicesError} />}
-      </div>
+      <SubServicesField
+        form={form as unknown as SubServicesForm}
+        category={category}
+        labelledBy={TITLE_ID}
+        errorId={ERROR_ID}
+        otherId={OTHER_ID}
+      />
     </StepLayout>
   );
 }

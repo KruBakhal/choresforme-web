@@ -37,10 +37,15 @@ type MobileVerifyFieldProps = {
   /** Field to focus once the number is verified (the next field). */
   nextFocusId?: string;
   disabled?: boolean;
+  /**
+   * T8 Account: start in the verified phase (the saved number is already
+   * verified). "Change number" returns to idle, as after a verification.
+   */
+  initiallyVerified?: boolean;
 };
 
 /** "+15551234567" or "5551234567" → "(555) 123-4567". */
-function formatUsMobile(value: string): string {
+export function formatUsMobile(value: string): string {
   const parsed = mobileSchema.safeParse(value);
   if (!parsed.success) return value;
   const digits = parsed.data.slice(-10);
@@ -68,8 +73,9 @@ export function MobileVerifyField({
   focusRef,
   nextFocusId,
   disabled = false,
+  initiallyVerified = false,
 }: MobileVerifyFieldProps) {
-  const [phase, setPhase] = React.useState<Phase>("idle");
+  const [phase, setPhase] = React.useState<Phase>(initiallyVerified ? "verified" : "idle");
   const [code, setCode] = React.useState<string[]>(emptyOtp);
   const [rowError, setRowError] = React.useState<string | null>(null);
   const [otpError, setOtpError] = React.useState<string | null>(null);

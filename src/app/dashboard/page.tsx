@@ -1,13 +1,15 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
-import { DashboardPlaceholder } from "@/components/auth/dashboard-placeholder";
+import { CustomerHome } from "@/components/dashboard/customer-home";
+import { LoadingState } from "@/components/states/loading-state";
 import { AUTH_COPY } from "@/lib/constants";
 
 /*
- * The client guard (RequireRole) renders this page only after the session has
- * loaded in the browser, so it is never part of the prerendered shell. Opt it
- * out of instant-navigation validation, which would otherwise report it as a
- * dropped segment.
+ * The client guard (RequireRole, in the dashboard layout) renders this page
+ * only after the session has loaded in the browser, so it is never part of
+ * the prerendered shell. Opt it out of instant-navigation validation, which
+ * would otherwise report it as a dropped segment (as T5 does on /dashboard).
  */
 export const instant = false;
 
@@ -16,7 +18,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/* Placeholder behind the guard; T8 replaces the content. */
+/* Customer Home (T8): active jobs, Saved Templates and the app banner in the rail. */
 export default function CustomerDashboardPage() {
-  return <DashboardPlaceholder role="customer" />;
+  return (
+    <Suspense fallback={<LoadingState variant="cards" columns={1} />}>
+      <CustomerHome />
+    </Suspense>
+  );
 }

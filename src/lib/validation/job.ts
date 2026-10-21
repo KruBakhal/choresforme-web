@@ -11,6 +11,7 @@ import {
   optionalNumberSchema,
   photosSchema,
   pricingTypeSchema,
+  ratingSchema,
   templateNameSchema,
 } from "@/lib/validation/fields";
 
@@ -151,3 +152,30 @@ export const jobPostSchema = z
     },
     { when: always },
   );
+
+/**
+ * Edit job (T8, open question 2): services, address, description and
+ * pricing of a posted job. No photos, category, match type or worker: the
+ * category is passed in only so the services rule can check it.
+ */
+export const jobEditSchema = z
+  .object({
+    ...servicesShape,
+    address: addressSchema,
+    description: detailsShape.description,
+    pricingType: detailsShape.pricingType,
+    amount: detailsShape.amount,
+    hours: detailsShape.hours,
+  })
+  .superRefine(
+    (value, ctx) => {
+      refineServices(value, ctx);
+      refinePricing(value, ctx);
+    },
+    { when: always },
+  );
+
+/** Rate a completed job (T8): 1–5 whole stars. */
+export const ratingFormSchema = z.object({
+  stars: z.number(M.rating).refine((value) => ratingSchema.safeParse(value).success, M.rating),
+});
