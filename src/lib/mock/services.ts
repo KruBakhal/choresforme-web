@@ -610,28 +610,44 @@ export const workers = {
     );
   },
 
-  /** The file is checked, then dropped: nothing is stored or sent. Sets the matching status to `under_review`. */
+  /**
+   * The file is checked, then dropped: nothing is stored or sent. Insurance
+   * goes to `under_review` at once. The ID goes to `under_review` only once
+   * both `id_front` and `id_back` are on record for the worker (T9 decision
+   * 2); a single side leaves the ID status as it was. Resolves with the
+   * matching status after the upload. `?mockUploadError=1` fails the first
+   * call after the page loads.
+   */
   uploadDocument(userId: string, kind: DocumentKind, file: File): Promise<VerificationStatus> {
-    return runService(() =>
-      updateDb((db) => {
-        const profile = requireWorkerProfile(db, userId);
-        parseOrFail(
-          documentFileSchemas[kind],
-          file,
-          "UPLOAD_FAILED",
-          SERVICE_MESSAGES.uploadFailed,
-        );
-        const status: VerificationStatus = "under_review";
-        if (kind === "insurance") {
-          profile.insuranceStatus = status;
-        } else {
-          profile.idStatus = status;
-        }
-        if (profile.idStatus !== "rejected" && profile.insuranceStatus !== "rejected") {
-          delete profile.rejectionReason;
-        }
-        return status;
-      }),
+    return runService(
+      () =>
+        updateDb((db) => {
+          const profile = requireWorkerProfile(db, userId);
+          parseOrFail(
+            documentFileSchemas[kind],
+            file,
+            "UPLOAD_FAILED",
+            SERVICE_MESSAGES.uploadFailed,
+          );
+          if (kind === "insurance") {
+            profile.insuranceStatus = "under_review";
+          } else {
+            const received = db.idSidesUploaded ?? {};
+            const sides = new Set([...(received[userId] ?? []), kind]);
+            if (sides.has("id_front") && sides.has("id_back")) {
+              profile.idStatus = "under_review";
+              delete received[userId];
+            } else {
+              received[userId] = [...sides];
+            }
+            db.idSidesUploaded = received;
+          }
+          if (profile.idStatus !== "rejected" && profile.insuranceStatus !== "rejected") {
+            delete profile.rejectionReason;
+          }
+          return kind === "insurance" ? profile.insuranceStatus : profile.idStatus;
+        }),
+      { upload: true },
     );
   },
 };

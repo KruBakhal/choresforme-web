@@ -9,8 +9,8 @@
 | T5 Auth | Done | 2aa273b | `/login` (demo accounts panel), `/signup` (role picker, form, complete profile), `/forgot-password`; demo Google/Facebook dialog; hand-built inline OTP; `RequireRole` guard with `next`; separate-accounts notice; Log out in AppShell; Header signed-in island; placeholder `/dashboard` and `/worker/dashboard`; `useRevisitKey` resets flows that Cache Components keeps alive. QA passed in round 2 (round 1 had 3 blockers). |
 | T6 Job builder 1–5 | Done | 727632e | Five fixed routes `/post-job/{category,services,location,details,match}`; Stepper ("Step N of 8"), StepLayout with sticky mobile footer, "Your job" summary; SelectableCard, AddressInput (mocked autocomplete), NotifyMeForm, PhotoUploader (5 max, camera on touch), PriceInput (fixed/hourly live total), WorkerCard; persisted draft with step guards and `?category=` skip; `instant = false` on step pages |
 | T7 Job builder 6–8 | Done | 08e2268 | `/post-job/review` (ReviewSummary with Edit links and `?from=review`, inline sign-up/log-in/social as customer, Save As Template), `/post-job/payment` (saved cards or new card, brand + last 4 only, charged on completion, no refunds), `/post-job/confirmation` (posted job, what happens next, template offer, AppPrompt with Android Play button and 7-day dismiss). A guest can post a job end to end. |
-| T8 Customer dashboard | Done | | `/dashboard` (Home with rail: templates and app banner), `/dashboard/jobs`, `/dashboard/jobs/[id]` (StatusBadge; edit, cancel with fee-to-be-confirmed dialog, rate 1–5 once, favourite, receipt, re-post), `/dashboard/jobs/[id]/edit`, `/dashboard/history` (table, cards below 768), `/dashboard/account` (profile with OTP on mobile change, cards, favourites, templates); `workers.getSummaries` added; inline success status (no toast) |
-| T9 Worker onboarding | Not started | | |
+| T8 Customer dashboard | Done | 5d5bad2 | `/dashboard` (Home with rail: templates and app banner), `/dashboard/jobs`, `/dashboard/jobs/[id]` (StatusBadge; edit, cancel with fee-to-be-confirmed dialog, rate 1–5 once, favourite, receipt, re-post), `/dashboard/jobs/[id]/edit`, `/dashboard/history` (table, cards below 768), `/dashboard/account` (profile with OTP on mobile change, cards, favourites, templates); `workers.getSummaries` added; inline success status (no toast) |
+| T9 Worker onboarding | Done | | `/worker/onboarding/{area,services,id,insurance,payout}` with onboarding shell (Finish later, Log out); area with map placeholder + radius slider (5–200); ID front/back + optional photo and insurance uploads with per-file progress, "Upload failed" + retry; ID goes Under review only after both sides; payout UI only (`payoutAdded`); VerificationChecklist + IdCard; resume + guards; worker sign-up now lands on area. A new worker reaches "Under review". QA passed in round 2 (round 1 had 1 blocker: stretched buttons). |
 | T10 Worker dashboard | Not started | | |
 | T11 Hand-off + analytics | Not started | | |
 | T12 QA + demo deploy | Not started | | |
@@ -90,6 +90,14 @@
 - `/post-job/confirmation` at 375 px: the summary header wraps cleanly with the new StatusBadge.
 - Any page on `next start` in a fresh browser profile: the console is clean (QA saw a stale "link preload but not used" CSS warning, most likely a cached prefetch).
 
+### T9
+- `/worker/onboarding/services`, `/insurance`, `/payout` and `/post-job/*` at 1280 and 1024 px: Back and the main button are the same height.
+- `/worker/onboarding/area` at 1280 px: the map placeholder (dashed ring, pin, chip, caption) looks right; the ring animates while dragging and stays still with reduced motion.
+- `/worker/onboarding/id` at 1280 and 1024 px: the two ID fields sit side by side. Check the progress bar, the "Uploaded" tick, "Upload failed" + Retry (with `?mockUploadError=1`), and the thumbnail and HEIC/PDF tiles.
+- Every onboarding step at 1280 and 1024 px: the panel colours, the badge icons in greyscale, and the border on the current row.
+- `/worker/onboarding/payout` at 768 px: the panel sits above the heading, with the checklist and ID-Card side by side.
+- Every onboarding step at 375 px on a real phone: the sticky footer clears the browser bar, "Take photo" opens the camera, and the toggle chevron rotates.
+
 ## Minor issues (fix in T12)
 
 - [T1] `.prettierignore` does not list root markdown files (AGENTS.md, CLAUDE.md, README.md); `npm run format` rewrites their line endings and `format:check` fails on AGENTS.md. Fix: ignore `*.md` at root.
@@ -136,6 +144,11 @@
 - [T8] `src/app/dashboard/layout.tsx:20`: the Suspense fallback has no side nav or skip link, so on a hard load of `/dashboard/jobs/[id]` the nav pops in and content shifts 240 px.
 - [T8] `src/components/dashboard/cancel-job-dialog.tsx:152,160`: during "Cancelling…" both buttons are disabled and keyboard focus drops out of the open dialog.
 - [T8] `src/components/dashboard/job-detail-view.tsx:123`: after a NOT_ALLOWED reload, the worker and favourites aren't refetched if the job's status changed.
+- [T9] `src/components/flow/step-layout.tsx:184` / `src/lib/constants.ts:2068,2072`: at 375 px, "Submit for review" and "Add payout account" wrap to two lines (73 px) in the sticky footer.
+- [T9] `src/lib/validation/worker.ts:56-58`: a file refused for wrong type or size over 10 MB shows the "required" message ("Upload your insurance document") instead of the reason.
+- [T9] `src/lib/mock/services.ts:636-641`: after both ID sides are re-uploaded following an earlier partial upload, a stale side can stay on record, so a later single-side re-upload (for example after a T10 rejection) could flip the ID to Under review.
+- [T9] The landmark hint on the worker base address reads as customer copy ("helps the worker find it").
+- [T6, seen in T9 QA] In the production build in QA's browser pane, `/post-job/*` Continue/Back sometimes did a full page load (so focus didn't reach the next heading). The lead engineer could not reproduce it on HEAD 5d5bad2 or the T9 tree (0 full loads in 31 moves). Investigate in T12.
 
 ## Open questions
 
@@ -170,3 +183,7 @@
 - [T8] Provisional dashboard copy (`DASHBOARD_COPY`): empty states such as "No active jobs right now", the "Your changes are saved." message, receipt labels, and "This email is already used by another account".
 - [T8] Out of scope because no service exists for them: removing a card, setting a default card, and renaming or deleting a template. The PRD's Account items Payment Analytics, Ratings, Notifications, Settings and the notification bell are also not built. Confirm these are post-MVP.
 - [T8] The mock job services don't check `customerId`; the UI hides other customers' jobs ("We couldn't find this job"). Fine for the demo; the real backend must enforce it.
+- [T9] Payout collects a bank routing number and account number only (UI only, nothing stored but "added"). The PRD's card payout option is post-MVP. Confirm.
+- [T9] The worker's base address may be in any US state, with a non-blocking "Jobs may be limited in <state>" note (no notify-me for workers). Confirm.
+- [T9] The worker profile photo is a local preview only; after a reload the ID-Card shows initials and an "Add a profile photo" note. There is no profile-photo service.
+- [T9] Provisional onboarding copy (`WORKER_ONBOARDING_COPY`): headings, buttons, map text, out-of-area note, payout demo note, checklist labels, ID-Card note, the save error line and page titles.

@@ -54,8 +54,8 @@ type StepLayoutProps = {
   as?: "form" | "div";
   /** Required with `as="form"`. */
   onSubmit?: React.FormEventHandler<HTMLFormElement>;
-  /** Saves without validating, then navigates. */
-  onBack: () => void;
+  /** Saves without validating, then navigates. Omitted (T9 Your area): no Back button. */
+  onBack?: () => void;
   backDisabled?: boolean;
   continueLabel?: string;
   /** Spinner on Continue (T7 Payment: "Posting your job…"). */
@@ -72,6 +72,12 @@ type StepLayoutProps = {
   summaryFirst?: boolean;
   /** The "Your job" summary panel (or T7 Review's auth panel). */
   summary: React.ReactNode;
+  /** The Stepper's accessible name (default "Job progress"; T9 "Onboarding progress"). */
+  stepperLabel?: string;
+  /** Passed to `Stepper` (T9: steps done in any order). */
+  stepperDoneSteps?: readonly number[];
+  /** Passed to `Stepper` (T9: a step outside the count, with `step={0}`). */
+  stepperStatusText?: string;
   children: React.ReactNode;
 };
 
@@ -88,9 +94,14 @@ const ASIDE_COLUMN = {
   wide: "min-w-0 lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-1 lg:self-start xl:col-span-5 xl:col-start-8",
 } as const;
 
+/*
+ * `lg:self-start`: the aside spans both rows, so when it is taller than the
+ * fields (T9 "Your progress") row 2 grows; the actions keep their own height
+ * instead of stretching (and stretching the wrap-safe Continue with them).
+ */
 const ACTIONS_COLUMN = {
-  summary: "lg:col-span-8 lg:col-start-1 lg:row-start-2 xl:col-span-7",
-  wide: "lg:col-span-6 lg:col-start-1 lg:row-start-2 xl:col-span-7",
+  summary: "lg:col-span-8 lg:col-start-1 lg:row-start-2 lg:self-start xl:col-span-7",
+  wide: "lg:col-span-6 lg:col-start-1 lg:row-start-2 lg:self-start xl:col-span-7",
 } as const;
 
 const GRID = "flex flex-col gap-8 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:gap-y-8";
@@ -121,6 +132,9 @@ export function StepLayout({
   asideSticky = true,
   summaryFirst = false,
   summary,
+  stepperLabel = COPY.stepper.ariaLabel,
+  stepperDoneSteps,
+  stepperStatusText,
   children,
 }: StepLayoutProps) {
   const headingRef = React.useRef<HTMLHeadingElement>(null);
@@ -157,13 +171,16 @@ export function StepLayout({
     <div
       className={cn(
         "sticky bottom-0 z-40 -mx-4 flex gap-3 border-t border-border bg-surface px-4 pt-3 pb-safe md:static md:mx-0 md:justify-between md:px-0 md:pt-6 md:pb-0",
+        !onBack && "md:justify-end",
         ACTIONS_COLUMN[asideWidth],
       )}
     >
-      <Button type="button" variant="outline" onClick={onBack} disabled={backDisabled}>
-        <ArrowLeft aria-hidden />
-        {COPY.actions.back}
-      </Button>
+      {onBack && (
+        <Button type="button" variant="outline" onClick={onBack} disabled={backDisabled}>
+          <ArrowLeft aria-hidden />
+          {COPY.actions.back}
+        </Button>
+      )}
       {!hideContinue && (
         <Button
           type="submit"
@@ -198,8 +215,10 @@ export function StepLayout({
         <Stepper
           steps={steps}
           current={step}
-          ariaLabel={COPY.stepper.ariaLabel}
+          ariaLabel={stepperLabel}
           statusId={statusId}
+          doneSteps={stepperDoneSteps}
+          statusText={stepperStatusText}
         />
       </div>
       {as === "form" ? (

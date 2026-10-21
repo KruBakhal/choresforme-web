@@ -10,10 +10,21 @@ type StepperProps = {
   ariaLabel: string;
   /** Id of the "Step N of total" line, so the step heading can reference it. */
   statusId: string;
+  /**
+   * T9: steps that may be done in any order. When set, a step other than the
+   * current one is "done" only when its number is listed, else "upcoming".
+   */
+  doneSteps?: readonly number[];
+  /**
+   * T9: replaces "Step N of total" (and the mobile "· label" and "Next: …"
+   * lines), for a step outside the count; pass `current={0}`.
+   */
+  statusText?: string;
 };
 
 /* Static map: a computed `grid-cols-${n}` class would not be generated. */
 const GRID_COLS: Record<number, string> = {
+  4: "grid-cols-4",
   5: "grid-cols-5",
   8: "grid-cols-8",
 };
@@ -26,7 +37,14 @@ const COPY = JOB_BUILDER_COPY.stepper;
  * screen-reader only and the visible line names the current and next steps.
  * No focusable elements; the step text always carries the information.
  */
-export function Stepper({ steps, current, ariaLabel, statusId }: StepperProps) {
+export function Stepper({
+  steps,
+  current,
+  ariaLabel,
+  statusId,
+  doneSteps,
+  statusText,
+}: StepperProps) {
   const total = steps.length;
   const currentLabel = steps[current - 1]?.label ?? "";
   const nextLabel = steps[current]?.label;
@@ -35,14 +53,18 @@ export function Stepper({ steps, current, ariaLabel, statusId }: StepperProps) {
     <nav aria-label={ariaLabel} className="w-full">
       <div className="flex items-baseline justify-between gap-4">
         <p id={statusId} className="text-body-sm font-semibold text-ink">
-          {COPY.status(current, total)}
-          <span className="sr-only">: {currentLabel}</span>
-          <span className="md:hidden" aria-hidden>
-            {" · "}
-            {currentLabel}
-          </span>
+          {statusText ?? (
+            <>
+              {COPY.status(current, total)}
+              <span className="sr-only">: {currentLabel}</span>
+              <span className="md:hidden" aria-hidden>
+                {" · "}
+                {currentLabel}
+              </span>
+            </>
+          )}
         </p>
-        {nextLabel && (
+        {!statusText && nextLabel && (
           <p className="text-body-sm text-ink-muted md:hidden" aria-hidden>
             {COPY.next(nextLabel)}
           </p>
@@ -51,7 +73,12 @@ export function Stepper({ steps, current, ariaLabel, statusId }: StepperProps) {
       <ol className={cn("mt-3 grid gap-1 lg:gap-2", GRID_COLS[total] ?? "grid-cols-8")}>
         {steps.map((step, index) => {
           const number = index + 1;
-          const state = number < current ? "done" : number === current ? "current" : "upcoming";
+          const state =
+            number === current
+              ? "current"
+              : (doneSteps ? doneSteps.includes(number) : number < current)
+                ? "done"
+                : "upcoming";
           return (
             <li
               key={step.label}

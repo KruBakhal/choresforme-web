@@ -1273,11 +1273,11 @@ export const ROLE_HOME: Record<Role, string> = {
 
 /**
  * Where a new account goes after sign-up when there is no `next` (T5
- * decision 9). T9 switches the worker route to `/worker/onboarding/area`.
+ * decision 9). A new worker starts onboarding at Your area (T9).
  */
 export const POST_SIGN_UP_ROUTE: Record<Role, string> = {
   customer: ROLE_HOME.customer,
-  worker: ROLE_HOME.worker,
+  worker: "/worker/onboarding/area",
 };
 
 /** One-click password used by the Demo accounts panel (any password works). */
@@ -2016,5 +2016,190 @@ export const DASHBOARD_COPY = {
     supportIntro: "Questions about a job or a payment? We're here to help.",
     callOrText: (phone: string) => `Call or text ${phone}`,
     faq: "Read the FAQ",
+  },
+} as const;
+
+/*
+ * ---------------------------------------------------------------------------
+ * T9: worker onboarding. Copy is [provisional] (T9 open question 17) unless
+ * marked verbatim or reused.
+ * ---------------------------------------------------------------------------
+ */
+
+/** Onboarding routes, one fixed folder per step (T9). */
+export const ONBOARDING_ROUTES: Record<OnboardingStep, string> = {
+  area: "/worker/onboarding/area",
+  services: "/worker/onboarding/services",
+  id: "/worker/onboarding/id",
+  insurance: "/worker/onboarding/insurance",
+  payout: "/worker/onboarding/payout",
+};
+
+const milesText = (miles: number) => `${miles} miles`;
+const lowerFirst = (text: string) => `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+const fileLimitMb = LIMITS.fileMaxBytes / (1024 * 1024);
+
+export const WORKER_ONBOARDING_COPY = {
+  meta: {
+    area: "Your area · Chores For Me",
+    services: "Your services · Chores For Me",
+    id: "Verify ID · Chores For Me",
+    insurance: "Insurance · Chores For Me",
+    payout: "Payout account · Chores For Me",
+  },
+  header: {
+    finishLater: "Finish later",
+  },
+  stepper: {
+    ariaLabel: "Onboarding progress",
+    /** The "Step N of 4" steps; payout is not counted (T9 rule 4). */
+    steps: [
+      { step: "area", label: "Your area" },
+      { step: "services", label: "Your services" },
+      { step: "id", label: "Verify ID" },
+      { step: "insurance", label: "Insurance" },
+    ] as const satisfies readonly { step: OnboardingStep; label: string }[],
+    payoutStatus: "Payout account · Needed before your first payout",
+  },
+  actions: {
+    back: JOB_BUILDER_COPY.actions.back,
+    continue: JOB_BUILDER_COPY.actions.continue,
+    saving: "Saving…",
+    submitForReview: "Submit for review",
+    uploading: "Uploading…",
+    skip: "Skip for now",
+    seeJobs: "See jobs near you first",
+    addPayout: "Add payout account",
+  },
+  loadError: "We couldn't load your onboarding progress. Please try again.",
+  saveError: "Something went wrong. Your progress is saved — try again",
+  progress: {
+    title: "Your progress",
+    count: (done: number, total: number) => `${done} of ${total} done`,
+    youAreHere: "You're here",
+    rows: {
+      area: "Your area",
+      services: "Your services",
+      id: "Verify ID",
+      insurance: "Insurance",
+      payout: "Payout account",
+    } satisfies Record<OnboardingStep, string>,
+    payoutNote: "Required before your first payout",
+  },
+  status: {
+    done: "Done",
+    statusSr: "Status: ",
+  },
+  idCard: {
+    title: "Chores ID-Card",
+    photoNeeded: "Add a profile photo to complete your ID-Card",
+  },
+  area: {
+    title: "Where do you want to work?",
+    description: "Set your base address and how far you'll travel. US addresses only.",
+    addressHeading: "Base address",
+    radiusHeading: "How far you'll travel",
+    radiusLabel: "Service radius",
+    radiusValue: milesText,
+    radiusHint: "You'll see jobs within this distance of your base address.",
+    scaleMin: `${LIMITS.radiusMin} mi`,
+    scaleMax: `${LIMITS.radiusMax} mi`,
+    mapChip: "Preview — not to scale",
+    mapWithin: (miles: number) => `Within ${milesText(miles)}`,
+    mapOf: (address: string) => `of ${address}`,
+    mapPrompt: "Add your base address to place your area",
+    mapRadius: (miles: number) => `Radius: ${milesText(miles)}`,
+    outOfAreaTitle: (state: string) => `Jobs may be limited in ${state}`,
+    outOfAreaBody: (served: string) =>
+      `Chores For Me is live in ${served} for now. You can still finish setting up — jobs will show here as we grow.`,
+  },
+  services: {
+    title: "Which services do you offer?",
+    description: "Choose all that apply. You'll see jobs in these categories.",
+  },
+  id: {
+    title: "Verify your ID",
+    description:
+      "Upload the front and back of a government photo ID. It's used for identity verification only.",
+    photoIdHeading: "Photo ID",
+    photoIdHint: "Both sides, clearly readable.",
+    front: "Front of your ID",
+    back: "Back of your ID",
+    frontPrompt: "Add a clear photo of the front",
+    backPrompt: "Add a clear photo of the back",
+    fileHint: `JPG, PNG, HEIC or WebP, under ${fileLimitMb} MB.`,
+    profileHeading: "Profile photo (optional)",
+    profileHint: "Shown on your Chores ID-Card. It stays on this device until you reload.",
+    profileLabel: "Your photo",
+    profilePrompt: "Add a clear photo of your face",
+    partialNote: "Your ID goes for review once both sides are uploaded.",
+    /** Tech Spec "Screen states" (verbatim). */
+    successTitle: SCREEN_STATE_COPY.underReview,
+    success:
+      "Thanks — we've received both sides of your ID. It shows as Under review until it's approved.",
+    skipNote:
+      "Not ready? You can verify your ID later — you'll need it before you can accept jobs.",
+  },
+  insurance: {
+    title: "Add your insurance",
+    description: "Upload your insurance document. A photo or a PDF works.",
+    label: "Insurance document",
+    hint: `JPG, PNG, HEIC, WebP or PDF, under ${fileLimitMb} MB.`,
+    prompt: "Add your insurance document",
+    /** Tech Spec "Screen states" (verbatim). */
+    successTitle: SCREEN_STATE_COPY.underReview,
+    success:
+      "Thanks — we've received your insurance document. It shows as Under review until it's approved.",
+    skipNote: "Not ready? You can add insurance later — you'll need it before you can accept jobs.",
+  },
+  upload: {
+    chooseFile: "Choose file",
+    takePhoto: "Take photo",
+    chooseSr: (label: string) => ` for ${lowerFirst(label)}`,
+    takePhotoSr: (label: string) => ` of ${lowerFirst(label)}`,
+    ready: "Ready to submit",
+    uploading: "Uploading…",
+    percent: (value: number) => `${value}%`,
+    /** One file that arrived (T9 orchestrator decision 4: "Under review" is the overall status only). */
+    uploaded: "Uploaded",
+    /** Tech Spec "Screen states" (verbatim). */
+    failed: SCREEN_STATE_COPY.uploadFailed,
+    retry: "Retry",
+    retrySr: (label: string) => ` upload: ${label}`,
+    remove: (label: string, name: string) => `Remove ${lowerFirst(label)}: ${name}`,
+    alt: (label: string, name: string) => `${label}: ${name}`,
+    size: (bytes: number) => `${Math.max(0.1, Math.round((bytes / (1024 * 1024)) * 10) / 10)} MB`,
+    pdf: "PDF",
+    heic: "HEIC",
+  },
+  statusPanel: {
+    idTitle: "Your ID",
+    insuranceTitle: "Your insurance",
+    payoutTitle: "Payout account",
+    idUnderReview:
+      "We've received both sides of your ID. It shows as Under review until it's approved.",
+    insuranceUnderReview:
+      "We've received your insurance document. It shows as Under review until it's approved.",
+    idVerified: "Your ID is verified.",
+    insuranceVerified: "Your insurance is verified.",
+    reasonLabel: "Reason:",
+    reasonFallback: "It couldn't be approved.",
+    idReupload: "Upload new photos of the front and back below.",
+    insuranceReupload: "Upload a new document below.",
+    payoutAdded: "Payout account added. For your security, the numbers aren't shown.",
+    updatePayout: "Update payout account",
+  },
+  payout: {
+    title: "Add a payout account",
+    description:
+      "Where your earnings are sent. Required before your first payout, not before you apply.",
+    demoTitle: "Demo only",
+    demoNote:
+      "Don't enter real bank details. Try routing number 110000000 and account number 000123456789.",
+    routingLabel: "Routing number",
+    routingHint: `${LIMITS.routingNumberLength} digits`,
+    accountLabel: "Account number",
+    accountHint: `${LIMITS.accountNumberMin} to ${LIMITS.accountNumberMax} digits`,
+    skipNote: "Required before your first payout, not before you apply.",
   },
 } as const;

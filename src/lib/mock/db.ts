@@ -1,6 +1,7 @@
 import { SEED } from "@/lib/mock/seed";
 import type {
   Category,
+  DocumentKind,
   Job,
   NotifyRequest,
   PaymentMethod,
@@ -36,7 +37,16 @@ export interface MockDb {
    * (T5 decision 1). Optional so databases saved before T5 stay valid.
    */
   verifiedMobiles?: string[];
+  /**
+   * Worker id → the ID sides received since the ID last went for review (T9
+   * decision 2: the ID goes under review only once both sides are in).
+   * Optional so databases saved before T9 stay valid.
+   */
+  idSidesUploaded?: Record<string, IdSide[]>;
 }
+
+/** The two sides of a photo ID. */
+export type IdSide = Exclude<DocumentKind, "insurance">;
 
 const DB_VERSION = SEED.version;
 const DB_KEY = "cfm-mock-db";
