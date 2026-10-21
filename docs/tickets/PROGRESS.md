@@ -7,8 +7,8 @@
 | T3 Data + mock layer | Done | bfb1b4d | Spec types, constants, seed (4 categories, 2 customers, 6 workers, 12 jobs, 2 templates, Visa 4242), persisted mock DB, all spec services plus extras, one-shot `?mockError=1`, 3 SSR-safe stores, Zod schemas + resolver, `track()` stub, Footer "Reset demo data", `/dev/mock` (noindex) |
 | T4 Marketing pages | Done | 0d7ae89 | Landing, `/services/[category]` (4 slugs, real 404), `/how-it-works`, `/workers`, `/faq` (searchable, hash-open), `/privacy` and `/terms` placeholders (noindex); robots + sitemap; live Play URLs and support contact; Footer Services column |
 | T5 Auth | Done | 2aa273b | `/login` (demo accounts panel), `/signup` (role picker, form, complete profile), `/forgot-password`; demo Google/Facebook dialog; hand-built inline OTP; `RequireRole` guard with `next`; separate-accounts notice; Log out in AppShell; Header signed-in island; placeholder `/dashboard` and `/worker/dashboard`; `useRevisitKey` resets flows that Cache Components keeps alive. QA passed in round 2 (round 1 had 3 blockers). |
-| T6 Job builder 1–5 | Done | | Five fixed routes `/post-job/{category,services,location,details,match}`; Stepper ("Step N of 8"), StepLayout with sticky mobile footer, "Your job" summary; SelectableCard, AddressInput (mocked autocomplete), NotifyMeForm, PhotoUploader (5 max, camera on touch), PriceInput (fixed/hourly live total), WorkerCard; persisted draft with step guards and `?category=` skip; `instant = false` on step pages |
-| T7 Job builder 6–8 | Not started | | |
+| T6 Job builder 1–5 | Done | 727632e | Five fixed routes `/post-job/{category,services,location,details,match}`; Stepper ("Step N of 8"), StepLayout with sticky mobile footer, "Your job" summary; SelectableCard, AddressInput (mocked autocomplete), NotifyMeForm, PhotoUploader (5 max, camera on touch), PriceInput (fixed/hourly live total), WorkerCard; persisted draft with step guards and `?category=` skip; `instant = false` on step pages |
+| T7 Job builder 6–8 | Done | | `/post-job/review` (ReviewSummary with Edit links and `?from=review`, inline sign-up/log-in/social as customer, Save As Template), `/post-job/payment` (saved cards or new card, brand + last 4 only, charged on completion, no refunds), `/post-job/confirmation` (posted job, what happens next, template offer, AppPrompt with Android Play button and 7-day dismiss). A guest can post a job end to end. |
 | T8 Customer dashboard | Not started | | |
 | T9 Worker onboarding | Not started | | |
 | T10 Worker dashboard | Not started | | |
@@ -72,6 +72,13 @@
 - `/post-job/match` at 1280 px: badge wrapping on the 218 px cards in 3 columns. At 1024 px: the 2-column grid. At 375 px: the list layout and the empty and error cards. With a screen reader: the loading, count and empty-state announcements.
 - All five steps at every width: the console is clean after a fresh load.
 
+### T7
+- `/post-job/review` at 1280 px: the 7/5 split; as `demo.customer` the Post card stays pinned while scrolling. At 1024 px: the six OTP boxes show no clipping. At 768 px: the order is summary, template, auth card, Questions?, Back, and the jump link scrolls to the card. At 375 px: no card chrome on the auth card, the footer holds Back only, and after social sign-in the finish-profile card is visible without scrolling. At any width: the focus ring is visible on the Edit links and the checkbox.
+- `/post-job/payment` at 1280 px: the order summary stays sticky. At 768 px: the expanded summary sits above the heading. At 375 px: the "Est. $…" bar sits above the heading; check how "Posting your job…" wraps. With an Amex number, the digits don't run under the "American Express" label.
+- `/post-job/confirmation?job=…` at 1280, 1024 and 768 px: a centred 672 px column. At 375 px with Android emulation: the Play button sits under the text, and the dismiss X doesn't overlap the title. After Dismiss, a reload keeps the prompt hidden.
+- `/post-job/confirmation?job=job-unknown` at 375 and 1280 px: the "We couldn't find this job" card, with stacked buttons at 375.
+- Every T7 route at all four widths: no console errors or warnings.
+
 ## Minor issues (fix in T12)
 
 - [T1] `.prettierignore` does not list root markdown files (AGENTS.md, CLAUDE.md, README.md); `npm run format` rewrites their line endings and `format:check` fails on AGENTS.md. Fix: ignore `*.md` at root.
@@ -106,6 +113,11 @@
 - [T6] `src/components/post-job/match-step.tsx:217`: while the worker list shows its error, the match cards don't carry the error id or `invalid` (UI plan §12).
 - [T6] `src/components/forms/address-input.tsx:170`: `aria-controls` points at the suggestion list even when it isn't rendered.
 - [T6] `src/components/post-job/job-step-route.tsx:43`: pressing browser Back into an old `?category=X` URL re-applies X and clears the services chosen since; `router.replace` to drop the param once applied.
+- [T7] `src/components/post-job/use-step-navigation.ts:44` (used at :53): with `?from=review` the Continue label reads the saved draft, not the live form (on Category it says "Save and return to review" but goes to Services; on Services it says "Continue" but returns to Review).
+- [T7] `src/lib/constants.ts:1719`: `nextDirect` plus a name ending in "." gives a double full stop ("…to Marcus J.. It shows…").
+- [T7] `src/components/post-job/confirmation-step.tsx:436` (with `payment-step.tsx:174` and `services.ts:435`): after a reload, template status comes only from `job.savedAsTemplate`. A save that failed during posting still reads "Saved as a template", and a template saved from the Confirmation offer is offered again (possible duplicate).
+- [T7] `src/components/flow/step-layout.tsx:172`: at 375 px "Posting your job…" wraps to two lines (the button grows to 73 px).
+- [T7] `src/components/post-job/review-auth-panel.tsx:185`: "Not you? Log out" on the finish-profile card has no `onError`, so a failed logout is silent.
 
 ## Open questions
 
@@ -134,3 +146,6 @@
 - [T6] Provisional job-builder copy: step headings and labels ("Step N of 8"), summary labels, notify-me text, the photo-dropped-on-reload note, the "Favourite" tag and page titles.
 - [T6] Photos in the job draft are kept only in memory for the session and dropped on reload (object URLs can't be persisted). Acceptable for the demo?
 - [T6] Changing the category clears the chosen services, the "Other" text and any picked worker, but keeps the address and details. Changing the address also clears a picked worker. Confirm.
+- [T7] Provisional checkout copy: the demo card note ("Demo only — don't enter a real card. Try 4242 4242 4242 4242."), "You're charged when the job is done. There are no refunds", the what-happens-next lines for board and direct jobs, the template messages, and the AppPrompt text beyond the PRD line.
+- [T7] Confirmation shows only a photo count, because photo URLs are revoked when the draft clears. Dashboards (T8) show placeholders.
+- [T7] The payment method used isn't recorded on the job (the Job type has no field for it). Fine for the demo?

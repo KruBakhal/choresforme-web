@@ -9,8 +9,8 @@ import type { JobDraft } from "@/lib/types";
 
 /*
  * Job builder draft. Saved at every step and kept through reloads and Back
- * ("Back never clears entered data"). T7 clears it after `jobs.create`
- * succeeds.
+ * ("Back never clears entered data"). T7 clears it (and the template name)
+ * after `jobs.create` succeeds.
  *
  * Photos are object URLs, which do not survive a reload (T6 decision 3): they
  * stay in memory for the tab's lifetime and are left out of the saved copy.
@@ -34,6 +34,12 @@ function withoutPhotos(draft: JobDraft): JobDraft {
 
 type JobDraftState = {
   draft: JobDraft;
+  /**
+   * The Save As Template name typed on Review (T7). Not a `Job` field, so it
+   * sits beside the draft; `draft.savedAsTemplate` holds the checkbox.
+   */
+  templateName?: string;
+  setTemplateName: (name: string | undefined) => void;
   setDraft: (draft: JobDraft) => void;
   /** Merges step values into the draft. */
   patchDraft: (patch: Partial<JobDraft>) => void;
@@ -46,6 +52,8 @@ export const useJobDraftStore = create<JobDraftState>()(
   persist(
     (set, get) => ({
       draft: EMPTY_JOB_DRAFT,
+      templateName: undefined,
+      setTemplateName: (templateName) => set({ templateName }),
       setDraft: (draft) => {
         revokeDropped(get().draft, draft);
         set({ draft });
@@ -62,7 +70,7 @@ export const useJobDraftStore = create<JobDraftState>()(
         })),
       clear: () => {
         revokePhotoUrls(get().draft.photos);
-        set({ draft: EMPTY_JOB_DRAFT });
+        set({ draft: EMPTY_JOB_DRAFT, templateName: undefined });
       },
     }),
     {
@@ -70,7 +78,10 @@ export const useJobDraftStore = create<JobDraftState>()(
       version: 1,
       storage: browserStorage,
       skipHydration: true,
-      partialize: (state) => ({ draft: withoutPhotos(state.draft) }),
+      partialize: (state) => ({
+        draft: withoutPhotos(state.draft),
+        templateName: state.templateName,
+      }),
     },
   ),
 );

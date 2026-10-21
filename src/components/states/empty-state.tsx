@@ -9,7 +9,8 @@ type EmptyStateProps = {
   description?: string;
   /** Usually a `Button`. Full width on mobile. */
   action?: React.ReactNode;
-  headingLevel?: 2 | 3 | 4;
+  /** 1 when the state is the whole page (T7 Confirmation); same look. */
+  headingLevel?: 1 | 2 | 3 | 4;
   className?: string;
 };
 
@@ -21,7 +22,8 @@ export function EmptyState({
   headingLevel = 2,
   className,
 }: EmptyStateProps) {
-  const Heading = headingLevel === 4 ? "h4" : headingLevel === 3 ? "h3" : "h2";
+  const Heading =
+    headingLevel === 4 ? "h4" : headingLevel === 3 ? "h3" : headingLevel === 1 ? "h1" : "h2";
 
   return (
     <div

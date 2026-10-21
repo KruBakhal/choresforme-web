@@ -131,6 +131,9 @@ export const reviewSchema = z
     { when: always },
   );
 
+/** Step 8 Confirmation: "Save this job as a template" (name only, T7). */
+export const saveTemplateSchema = z.object({ name: templateNameSchema });
+
 /** A complete job draft, checked by `jobs.create` before it posts. */
 export const jobPostSchema = z
   .object({

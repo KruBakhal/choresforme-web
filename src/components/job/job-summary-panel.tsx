@@ -25,7 +25,8 @@ const COPY = JOB_BUILDER_COPY.summary;
 const TITLE_ID = "job-summary-title";
 const BODY_ID = "job-summary-body";
 
-function servicesText(draft: JobDraft): string | null {
+/** "Lawn Mowing, Other: fence painting" (T6; reused by T7's `ReviewSummary`). */
+export function servicesText(draft: Pick<JobDraft, "subServices" | "otherText">): string | null {
   if (!draft.subServices?.length) return null;
   return draft.subServices
     .map((service) =>

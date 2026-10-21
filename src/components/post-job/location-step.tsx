@@ -10,7 +10,7 @@ import { focusFirstError } from "@/components/forms/focus-first-error";
 import { JobSummaryPanel } from "@/components/job/job-summary-panel";
 import { NotifyMeForm, OUT_OF_AREA_TITLE_ID } from "@/components/job/notify-me-form";
 import { useDraftAutosave } from "@/components/post-job/use-draft-autosave";
-import { useStepNavigation } from "@/components/post-job/use-step-navigation";
+import { useStepContinue, useStepNavigation } from "@/components/post-job/use-step-navigation";
 import { JOB_BUILDER_COPY, POST_JOB_STEPS } from "@/lib/constants";
 import { isAddressChanged, isServedState, stateName, stepRoute } from "@/lib/job-builder";
 import { selectSessionUser, useJobDraftStore, useSessionStore } from "@/lib/store";
@@ -54,6 +54,7 @@ function addressPatch(draft: JobDraft, address: LiveAddress | Address): Partial<
  */
 export function LocationStep() {
   const goToStep = useStepNavigation();
+  const { nextRoute, continueLabel } = useStepContinue(STEP);
   const draft = useJobDraftStore((state) => state.draft);
   const patchDraft = useJobDraftStore((state) => state.patchDraft);
   const completeStep = useJobDraftStore((state) => state.completeStep);
@@ -93,7 +94,7 @@ export function LocationStep() {
     autosave.cancel();
     patchDraft(addressPatch(useJobDraftStore.getState().draft, output.address));
     completeStep(STEP);
-    goToStep(stepRoute(STEP + 1));
+    goToStep(nextRoute());
   }
 
   function onBack() {
@@ -111,6 +112,7 @@ export function LocationStep() {
       description={COPY.description}
       onSubmit={form.handleSubmit(onValid, focusFirstError(FIELD_ORDER, form.setFocus))}
       onBack={onBack}
+      continueLabel={continueLabel}
       summary={
         <JobSummaryPanel
           draft={{ ...draft, ...addressPatch(draft, values.address ?? {}) }}

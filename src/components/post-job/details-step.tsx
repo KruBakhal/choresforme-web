@@ -15,7 +15,7 @@ import {
   type PriceInputForm,
 } from "@/components/job/price-input";
 import { useDraftAutosave } from "@/components/post-job/use-draft-autosave";
-import { useStepNavigation } from "@/components/post-job/use-step-navigation";
+import { useStepContinue, useStepNavigation } from "@/components/post-job/use-step-navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { JOB_BUILDER_COPY, LIMITS, PHOTO_MIME_TYPES, POST_JOB_STEPS } from "@/lib/constants";
 import { parseAmount, stepRoute } from "@/lib/job-builder";
@@ -79,6 +79,7 @@ const detailsResolver: Resolver<Values, unknown, Output> = (values, context, opt
  */
 export function DetailsStep() {
   const goToStep = useStepNavigation();
+  const { nextRoute, continueLabel } = useStepContinue(STEP);
   const draft = useJobDraftStore((state) => state.draft);
   const patchDraft = useJobDraftStore((state) => state.patchDraft);
   const completeStep = useJobDraftStore((state) => state.completeStep);
@@ -121,7 +122,7 @@ export function DetailsStep() {
       hours: output.pricingType === "hourly" ? output.hours : undefined,
     });
     completeStep(STEP);
-    goToStep(stepRoute(STEP + 1));
+    goToStep(nextRoute());
   }
 
   function onBack() {
@@ -139,6 +140,7 @@ export function DetailsStep() {
       description={COPY.description}
       onSubmit={form.handleSubmit(onValid, focusFirstError(FIELD_ORDER, form.setFocus))}
       onBack={onBack}
+      continueLabel={continueLabel}
       summary={<JobSummaryPanel draft={{ ...draft, ...toPatch(values) }} currentStep={STEP} />}
     >
       <div>

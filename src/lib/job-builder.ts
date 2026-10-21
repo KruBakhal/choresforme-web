@@ -19,6 +19,7 @@ import {
   detailsSchema,
   locationSchema,
   matchSchema,
+  reviewSchema,
   servicesSchema,
 } from "@/lib/validation";
 
@@ -117,8 +118,33 @@ export function firstIncompleteStepBefore(step: number, draft: JobDraft): string
   return missing?.route ?? null;
 }
 
+/** Step 6 Review & Post (T7). */
+export const REVIEW_STEP = 6;
+
+/**
+ * Review passed (T7 rule 1): steps 1–5 complete, Review continued from
+ * (`lastStep >= 6`) and a valid Save As Template choice.
+ */
+export function isReviewPassed(draft: JobDraft, templateName: string | undefined): boolean {
+  return (
+    firstIncompleteStep(draft) === null &&
+    draft.lastStep >= REVIEW_STEP &&
+    reviewSchema.safeParse({ savedAsTemplate: draft.savedAsTemplate ?? false, templateName })
+      .success
+  );
+}
+
 export function stepRoute(step: number): string {
   return POST_JOB_STEPS.find((item) => item.step === step)?.route ?? POST_JOB_STEPS[0].route;
+}
+
+/** `?from=review`: a step opened from an Edit link on Review (T7 open question 7). */
+export const FROM_REVIEW_PARAM = "from";
+export const FROM_REVIEW_VALUE = "review";
+
+/** The step's route with `?from=review`. */
+export function editFromReviewHref(step: number): string {
+  return `${stepRoute(step)}?${FROM_REVIEW_PARAM}=${FROM_REVIEW_VALUE}`;
 }
 
 // Price

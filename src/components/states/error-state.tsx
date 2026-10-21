@@ -15,7 +15,8 @@ type ErrorStateProps = {
   retryLabel?: string;
   /** For example a "Back to dashboard" outline `Button`. */
   secondaryAction?: React.ReactNode;
-  headingLevel?: 2 | 3 | 4;
+  /** 1 when the state is the whole page (T7 Confirmation); same look. */
+  headingLevel?: 1 | 2 | 3 | 4;
   className?: string;
 };
 
@@ -30,7 +31,8 @@ export function ErrorState({
   headingLevel = 2,
   className,
 }: ErrorStateProps) {
-  const Heading = headingLevel === 4 ? "h4" : headingLevel === 3 ? "h3" : "h2";
+  const Heading =
+    headingLevel === 4 ? "h4" : headingLevel === 3 ? "h3" : headingLevel === 1 ? "h1" : "h2";
 
   return (
     <div

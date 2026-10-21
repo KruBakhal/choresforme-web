@@ -33,6 +33,8 @@ type LoginFormProps = {
   onAlertChange?: (alert: FormAlertData | null) => void;
   /** Sign up link in the "No account found" alert (keeps `next`). */
   signUpHref?: string;
+  /** When set, the alert's "Sign up" switches the inline form instead of linking (T7). */
+  onSignUpInstead?: () => void;
   /** "Forgot password?" target (keeps `next`). */
   forgotPasswordHref?: string;
   disabled?: boolean;
@@ -45,6 +47,7 @@ export function LoginForm({
   onPendingChange,
   onAlertChange,
   signUpHref = AUTH_ROUTES.signUp,
+  onSignUpInstead,
   forgotPasswordHref = AUTH_ROUTES.forgotPassword,
   disabled = false,
   ref,
@@ -79,7 +82,9 @@ export function LoginForm({
         showAlert({
           tone: "error",
           message: SERVICE_MESSAGES.noAccount,
-          action: { label: AUTH_COPY.login.signUpLink, href: signUpHref },
+          action: onSignUpInstead
+            ? { label: AUTH_COPY.login.signUpLink, onClick: onSignUpInstead }
+            : { label: AUTH_COPY.login.signUpLink, href: signUpHref },
         });
       } else {
         showAlert({

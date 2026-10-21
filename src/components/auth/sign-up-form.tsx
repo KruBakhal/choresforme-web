@@ -72,6 +72,8 @@ type SignUpFormProps = {
   onAlertChange?: (alert: FormAlertData | null) => void;
   /** "Log in" link for "You already have an account — log in" (keeps `next`). */
   logInHref?: string;
+  /** When set, the alert's "Log in" switches the inline form instead of linking (T7). */
+  onLogInInstead?: () => void;
   disabled?: boolean;
 };
 
@@ -86,6 +88,7 @@ export function SignUpForm({
   onPendingChange,
   onAlertChange,
   logInHref = AUTH_ROUTES.login,
+  onLogInInstead,
   disabled = false,
 }: SignUpFormProps) {
   const [submitting, setSubmitting] = React.useState(false);
@@ -129,7 +132,9 @@ export function SignUpForm({
         showAlert({
           tone: "info",
           message: SERVICE_MESSAGES.accountExists,
-          action: { label: AUTH_COPY.signUp.logIn, href: logInHref },
+          action: onLogInInstead
+            ? { label: AUTH_COPY.signUp.logIn, onClick: onLogInInstead }
+            : { label: AUTH_COPY.signUp.logIn, href: logInHref },
         });
       } else {
         showAlert({

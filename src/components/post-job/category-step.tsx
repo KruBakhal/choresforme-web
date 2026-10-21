@@ -11,7 +11,7 @@ import { focusFirstError } from "@/components/forms/focus-first-error";
 import { FieldError } from "@/components/forms/form-field";
 import { JobSummaryPanel } from "@/components/job/job-summary-panel";
 import { useDraftAutosave } from "@/components/post-job/use-draft-autosave";
-import { useStepNavigation } from "@/components/post-job/use-step-navigation";
+import { useStepContinue, useStepNavigation } from "@/components/post-job/use-step-navigation";
 import { RadioGroup } from "@/components/ui/radio-group";
 import {
   CATEGORIES,
@@ -20,7 +20,7 @@ import {
   JOB_BUILDER_COPY,
   POST_JOB_STEPS,
 } from "@/lib/constants";
-import { categoryChangePatch, stepRoute } from "@/lib/job-builder";
+import { categoryChangePatch } from "@/lib/job-builder";
 import { useJobDraftStore } from "@/lib/store";
 import type { CategoryId } from "@/lib/types";
 import { categorySchema, zodResolver } from "@/lib/validation";
@@ -38,6 +38,7 @@ const COPY = JOB_BUILDER_COPY.category;
 export function CategoryStep() {
   const router = useRouter();
   const goToStep = useStepNavigation();
+  const { nextRoute, continueLabel } = useStepContinue(STEP);
   const draft = useJobDraftStore((state) => state.draft);
   const patchDraft = useJobDraftStore((state) => state.patchDraft);
   const completeStep = useJobDraftStore((state) => state.completeStep);
@@ -64,7 +65,7 @@ export function CategoryStep() {
     autosave.cancel();
     save(output);
     completeStep(STEP);
-    goToStep(stepRoute(STEP + 1));
+    goToStep(nextRoute());
   }
 
   function onBack() {
@@ -86,6 +87,7 @@ export function CategoryStep() {
       description={COPY.description}
       onSubmit={form.handleSubmit(onValid, focusFirstError(FIELD_ORDER, form.setFocus))}
       onBack={onBack}
+      continueLabel={continueLabel}
       summary={<JobSummaryPanel draft={liveDraft} currentStep={STEP} />}
     >
       <div className="flex flex-col gap-4">

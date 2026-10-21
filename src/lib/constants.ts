@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import type {
+  CardBrand,
   Category,
   CategoryId,
   JobStatus,
@@ -1508,6 +1509,9 @@ export const POST_JOB_STEPS = [
   { step: 8, route: "/post-job/confirmation", label: "Confirmation" },
 ] as const satisfies readonly PostJobStep[];
 
+/** The FAQ item's question, reused as a link label (T7). */
+const faqQuestion = (id: string) => FAQ_ITEMS.find((item) => item.id === id)?.question ?? "";
+
 const usd = (value: number) => `$${value.toLocaleString("en-US")}`;
 const hoursText = (hours: number) => `${hours} ${hours === 1 ? "hour" : "hours"}`;
 
@@ -1518,6 +1522,9 @@ export const JOB_BUILDER_COPY = {
     location: "Post a job — Where",
     details: "Post a job — Details",
     match: "Post a job — Who",
+    review: "Post a job — Review",
+    payment: "Post a job — Payment",
+    confirmation: "Post a job — Confirmation",
   },
   stepper: {
     ariaLabel: "Job progress",
@@ -1528,6 +1535,8 @@ export const JOB_BUILDER_COPY = {
   actions: {
     back: "Back",
     continue: "Continue",
+    /* T7 (Edit links from Review, `?from=review`). */
+    returnToReview: "Save and return to review",
   },
   summary: {
     title: "Your job",
@@ -1646,4 +1655,107 @@ export const JOB_BUILDER_COPY = {
     badgesLabel: "Verified checks",
     badges: { phone: "Phone", id: "ID", insurance: "Insurance" },
   },
+  /* T7: steps 6–8 [provisional] unless marked verbatim or reused. */
+  review: {
+    title: "Review your job",
+    descriptionGuest: "Check the details, then create an account or log in to post it.",
+    descriptionCustomer: "Check the details, then continue to payment.",
+    jumpToAuth: "Create an account to continue",
+    summaryTitle: "Your job",
+    edit: "Edit",
+    editSr: (section: string) => ` ${section.toLowerCase()}`,
+    priceFixed: (value: string) => `Fixed Price · ${value}`,
+    priceHourly: (breakdown: string) => `Hourly · ${breakdown}`,
+    workerLoading: "Loading worker…",
+    workerFallback: "your chosen worker",
+    workerError: "We couldn't load the worker's details.",
+    workerRetry: "Try again",
+    templateLabel: "Save as template",
+    templateHint: "Post this job again later from your dashboard.",
+    templateNameLabel: "Template name",
+    templateNameHint: `${LIMITS.templateNameMin} to ${LIMITS.templateNameMax} characters.`,
+    authLead: "Create an account or log in to post your job",
+    postTitle: "Ready to post your job",
+    postDescription: "Next, choose how to pay. You're charged when the job is done.",
+    signedInAs: "Signed in as",
+    continue: "Continue to payment",
+    helpTitle: "Questions?",
+    helpLinks: [
+      { id: "payment-timing", label: faqQuestion("payment-timing") },
+      { id: "cancellation-fee", label: faqQuestion("cancellation-fee") },
+    ],
+  },
+  payment: {
+    title: "How would you like to pay?",
+    description: "Choose a saved card or add a new one.",
+    methodsTitle: "Payment method",
+    methodsLoading: "Loading your payment methods…",
+    savedCard: (brand: string, last4: string) => `${brand} ending ${last4}`,
+    addNew: "Add a new card",
+    addNewDescription: "Visa, Mastercard or American Express",
+    noSavedTitle: "Add a card",
+    noSavedIntro: "You don't have a saved card yet.",
+    demoNote: "Demo only — don't enter a real card. Try 4242 4242 4242 4242.",
+    numberLabel: "Card number",
+    expiryLabel: "Expiry date",
+    expiryHint: "MM/YY",
+    cvcLabel: "Security code",
+    cvcHint: "3 digits (4 for Amex)",
+    estimateLabel: "Estimated total",
+    charged: "You're charged when the job is done.",
+    noRefunds: "There are no refunds.",
+    faqLink: { id: "payment-timing", label: faqQuestion("payment-timing") },
+    submit: "Post job",
+    /** Tech Spec (verbatim). */
+    submitting: SCREEN_STATE_COPY.postingJob,
+  },
+  confirmation: {
+    title: "Job posted",
+    description: "You can follow it from your dashboard.",
+    loading: "Loading your job…",
+    nextTitle: "What happens next",
+    nextBoard:
+      "Your job is on the job board. Verified workers near you can see it, and the first to accept gets it.",
+    nextDirect: (name: string) =>
+      `We've sent your job to ${name}. It shows as Accepted in your dashboard.`,
+    nextUpdates: "We'll email and text you updates.",
+    nextCharge: "You're charged when the job is done. There are no refunds.",
+    summaryTitle: "Job summary",
+    statusSr: "Status: ",
+    templateSaved: (name: string) => `Saved as template “${name}”`,
+    /** After a reload the name is not known (it lives on the template, not the job). */
+    templateSavedNoName: "Saved as a template",
+    templateSavedHint: "You'll find it in your dashboard.",
+    templateOfferTitle: "Save this job as a template",
+    templateOfferHint: "Post it again later from your dashboard.",
+    templateSaveFailed: "We couldn't save your template. You can try again here.",
+    templateSave: "Save template",
+    templateSaving: "Saving…",
+    postAnother: "Post another job",
+    notFoundDescription: "The link may be wrong, or the job belongs to another account.",
+    postJob: "Post a job",
+    promptHidden: "Hidden for 7 days.",
+  },
+} as const;
+
+/** Card brand names (T7). Never more than the brand and the last 4 digits are shown. */
+export const CARD_BRAND_LABELS: Record<CardBrand, string> = {
+  visa: "Visa",
+  mastercard: "Mastercard",
+  amex: "American Express",
+};
+
+/** App hand-off prompt (T7; T11 adds the worker entry). */
+export const APP_PROMPT_COPY = {
+  customer: {
+    /** PRD (verbatim). */
+    androidTitle: "Get notified the moment a worker accepts — install the app",
+    androidBody: "The Chores For Me app is free on Google Play.",
+    install: "Get it on Google Play",
+    /** PRD (verbatim). */
+    updates: "We'll email and text you updates",
+  },
+  dismiss: "Dismiss for 7 days",
+  /** Days a dismissed prompt stays hidden (PRD). */
+  dismissDays: 7,
 } as const;

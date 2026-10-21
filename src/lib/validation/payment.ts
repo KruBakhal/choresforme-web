@@ -58,3 +58,12 @@ export const cardSchema = z
       ctx.addIssue({ code: "custom", path: ["cvc"], message: M.cvc });
     }
   });
+
+/**
+ * Step 7 Payment (T7): a saved method, or a new card checked with
+ * `cardSchema`. One saved method is always preselected when any exist.
+ */
+export const paymentSchema = z.discriminatedUnion("method", [
+  z.object({ method: z.literal("saved"), methodId: z.string().min(1) }),
+  z.object({ method: z.literal("new"), card: cardSchema }),
+]);

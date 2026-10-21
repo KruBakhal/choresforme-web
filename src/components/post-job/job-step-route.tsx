@@ -8,9 +8,13 @@ import { useRevisitKey } from "@/lib/hooks/use-revisit-key";
 import {
   categoryChangePatch,
   firstIncompleteStepBefore,
+  isReviewPassed,
   parseCategoryParam,
+  REVIEW_STEP,
+  stepRoute,
 } from "@/lib/job-builder";
 import { useJobDraftHydrated, useJobDraftStore } from "@/lib/store";
+import type { JobDraft } from "@/lib/types";
 
 type JobStepRouteProps = {
   /** 1-based builder step. */
@@ -21,11 +25,24 @@ type JobStepRouteProps = {
 };
 
 /**
+ * Lets a step stop its guard before it clears the draft on purpose (T7:
+ * Payment posts the job, clears the draft, then replaces the route). Without
+ * it the guard would see the empty draft and flash a redirect to step 1.
+ */
+const HoldGuardContext = React.createContext<() => void>(() => {});
+
+/** Call right before clearing the draft and leaving the step (T7 rule 27). */
+export function useHoldStepGuard(): () => void {
+  return React.useContext(HoldGuardContext);
+}
+
+/**
  * The part of every builder step that stays mounted for the route's
  * lifetime (T6):
  * - applies a valid `?category=` (step 2: pre-selects it, decision 5 rules);
  * - the step guard: once the draft has loaded, a step whose earlier steps
- *   are incomplete redirects to the first incomplete one (rule 1);
+ *   are incomplete redirects to the first incomplete one (rule 1); from
+ *   step 7, a draft that has not passed Review goes to Review (T7);
  * - keys the step view with `useRevisitKey`, so a client-side revisit
  *   (Cache Components restores the route) remounts it with the current draft.
  */
@@ -34,11 +51,18 @@ export function JobStepRoute({ step, categoryParam = null, children }: JobStepRo
   const router = useRouter();
   const hydrated = useJobDraftHydrated();
   const draft = useJobDraftStore((state) => state.draft);
+  const templateName = useJobDraftStore((state) => state.templateName);
   const patchDraft = useJobDraftStore((state) => state.patchDraft);
+
+  // Held for this visit only: a revisit (new key) runs the guard again.
+  const [heldFor, setHeldFor] = React.useState<number | null>(null);
+  const held = heldFor === revisitKey;
+  const hold = React.useCallback(() => setHeldFor(revisitKey), [revisitKey]);
 
   const preselect = parseCategoryParam(categoryParam);
   const applyingCategory = hydrated && preselect !== null && draft.category !== preselect;
-  const redirectTo = hydrated && !applyingCategory ? firstIncompleteStepBefore(step, draft) : null;
+  const redirectTo =
+    hydrated && !applyingCategory && !held ? guardRedirect(step, draft, templateName) : null;
 
   React.useEffect(() => {
     if (!hydrated || !preselect) return;
@@ -52,7 +76,22 @@ export function JobStepRoute({ step, categoryParam = null, children }: JobStepRo
 
   if (!hydrated || applyingCategory || redirectTo) return <StepSkeleton />;
 
-  return <React.Fragment key={revisitKey}>{children}</React.Fragment>;
+  return (
+    <HoldGuardContext value={hold}>
+      <React.Fragment key={revisitKey}>{children}</React.Fragment>
+    </HoldGuardContext>
+  );
+}
+
+function guardRedirect(
+  step: number,
+  draft: JobDraft,
+  templateName: string | undefined,
+): string | null {
+  const incomplete = firstIncompleteStepBefore(step, draft);
+  if (incomplete) return incomplete;
+  if (step > REVIEW_STEP && !isReviewPassed(draft, templateName)) return stepRoute(REVIEW_STEP);
+  return null;
 }
 
 /** Step 2: reads `?category=`. Render inside `<Suspense>`. */

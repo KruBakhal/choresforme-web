@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { STATE_COPY } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-type LoadingVariant = "cards" | "rows" | "detail" | "summary" | "workers";
+type LoadingVariant = "cards" | "rows" | "detail" | "summary" | "workers" | "confirmation";
 
 type LoadingStateProps = {
   /** Pick the variant that matches the final layout of the screen. */
@@ -103,6 +103,35 @@ function SummarySkeleton() {
   );
 }
 
+/** Step 8 Confirmation (T7): the centred column. */
+function ConfirmationSkeleton() {
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+      <div>
+        <Skeleton className="size-12 rounded-full" />
+        <Skeleton className="mt-4 h-8 w-1/2" />
+        <Skeleton className="mt-2 h-4 w-2/3" />
+      </div>
+      <div className="flex flex-col gap-4 rounded-lg bg-surface-alt p-4 md:p-6">
+        <Skeleton className="h-6 w-1/3" />
+        {Array.from({ length: 3 }, (_, i) => (
+          <Skeleton key={i} className="h-4 w-full" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-4 rounded-lg border border-border p-4 md:p-6">
+        <Skeleton className="h-6 w-1/3" />
+        {Array.from({ length: 5 }, (_, i) => (
+          <Skeleton key={i} className="h-4 w-2/3" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Skeleton className="h-12 w-full sm:w-1/3" />
+        <Skeleton className="h-12 w-full sm:w-1/3" />
+      </div>
+    </div>
+  );
+}
+
 /** Skeleton placeholder that matches the final layout of a data screen. */
 export function LoadingState({
   variant,
@@ -119,6 +148,7 @@ export function LoadingState({
         {variant === "detail" && <DetailSkeleton />}
         {variant === "summary" && <SummarySkeleton />}
         {variant === "workers" && <WorkersSkeleton count={count ?? 3} />}
+        {variant === "confirmation" && <ConfirmationSkeleton />}
       </div>
     </div>
   );

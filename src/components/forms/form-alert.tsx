@@ -12,7 +12,8 @@ export type FormAlertData = {
   tone: "error" | "info";
   message: string;
   title?: string;
-  action?: { label: string; href: string };
+  /** A link, or (T7, inline auth on Review) a button that switches the form in place. */
+  action?: { label: string; href: string } | { label: string; onClick: () => void };
 };
 
 let alertSeq = 0;
@@ -96,11 +97,16 @@ export function FormAlertFromData({
       autoFocus={autoFocus}
       className={className}
       action={
-        alert.action && (
+        alert.action &&
+        ("href" in alert.action ? (
           <Button asChild variant="link" size="sm">
             <Link href={alert.action.href}>{alert.action.label}</Link>
           </Button>
-        )
+        ) : (
+          <Button type="button" variant="link" size="sm" onClick={alert.action.onClick}>
+            {alert.action.label}
+          </Button>
+        ))
       }
     />
   );

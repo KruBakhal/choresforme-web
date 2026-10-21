@@ -18,6 +18,9 @@ export const STORE_KEYS = {
   session: "cfm-session",
   jobDraft: "cfm-job-draft",
   onboarding: "cfm-worker-onboarding",
+  /** App prompt dismiss expiry, per app (T7; read and written by `lib/app-prompt`). */
+  appPromptCustomer: "cfm-app-prompt-customer",
+  appPromptWorker: "cfm-app-prompt-worker",
 } as const;
 
 const noopStorage: StateStorage = {

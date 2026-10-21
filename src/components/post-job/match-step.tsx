@@ -11,7 +11,7 @@ import { FieldError } from "@/components/forms/form-field";
 import { JobSummaryPanel } from "@/components/job/job-summary-panel";
 import { WorkerCard } from "@/components/job/worker-card";
 import { useDraftAutosave } from "@/components/post-job/use-draft-autosave";
-import { useStepNavigation } from "@/components/post-job/use-step-navigation";
+import { useStepContinue, useStepNavigation } from "@/components/post-job/use-step-navigation";
 import { EmptyState } from "@/components/states/empty-state";
 import { ErrorState } from "@/components/states/error-state";
 import { LoadingState } from "@/components/states/loading-state";
@@ -67,6 +67,7 @@ function favouritesFirst(list: WorkerSummary[], favouriteIds: string[]): WorkerS
  */
 export function MatchStep() {
   const goToStep = useStepNavigation();
+  const { nextRoute, continueLabel } = useStepContinue(STEP);
   const draft = useJobDraftStore((state) => state.draft);
   const patchDraft = useJobDraftStore((state) => state.patchDraft);
   const completeStep = useJobDraftStore((state) => state.completeStep);
@@ -166,7 +167,7 @@ export function MatchStep() {
     autosave.cancel();
     patchDraft(toPatch(output));
     completeStep(STEP);
-    goToStep(stepRoute(STEP + 1));
+    goToStep(nextRoute());
   }
 
   function onBack() {
@@ -190,6 +191,7 @@ export function MatchStep() {
       description={COPY.description}
       onSubmit={form.handleSubmit(onValid, onInvalid)}
       onBack={onBack}
+      continueLabel={continueLabel}
       summary={
         <JobSummaryPanel
           draft={{ ...draft, ...toPatch(values) }}

@@ -13,13 +13,16 @@ type AuthCardProps = {
   alert?: React.ReactNode;
   /** Under a rule at the bottom ("Already have an account? Log in"). */
   footer?: React.ReactNode;
+  /** 1 (default) on auth pages; 2 inside another page (T7 Review's inline card). */
+  headingLevel?: 1 | 2;
   className?: string;
   children?: React.ReactNode;
 };
 
 /**
  * Auth card: card chrome from md, a plain full-width form on phones. Holds
- * the page's one h1, the alert slot above the form and the footer links.
+ * the page's one h1 (or an h2 when embedded, T7), the alert slot above the
+ * form and the footer links.
  */
 export function AuthCard({
   titleId,
@@ -28,9 +31,11 @@ export function AuthCard({
   eyebrow,
   alert,
   footer,
+  headingLevel = 1,
   className,
   children,
 }: AuthCardProps) {
+  const Heading = headingLevel === 2 ? "h2" : "h1";
   return (
     <div
       className={cn(
@@ -39,13 +44,16 @@ export function AuthCard({
       )}
     >
       {eyebrow && <div className="mb-4">{eyebrow}</div>}
-      <h1
+      <Heading
         id={titleId}
         tabIndex={-1}
-        className="text-h3 outline-none focus-visible:outline-2 md:text-h2"
+        className={cn(
+          "text-h3 outline-none focus-visible:outline-2",
+          headingLevel === 1 && "md:text-h2",
+        )}
       >
         {title}
-      </h1>
+      </Heading>
       {description && <div className="mt-2 text-body text-ink-muted">{description}</div>}
       {alert && <div className="mt-6">{alert}</div>}
       {children && <div className="mt-6 md:mt-8">{children}</div>}

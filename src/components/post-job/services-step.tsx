@@ -11,7 +11,7 @@ import { focusFirstError } from "@/components/forms/focus-first-error";
 import { FieldError, FormField } from "@/components/forms/form-field";
 import { JobSummaryPanel } from "@/components/job/job-summary-panel";
 import { useDraftAutosave } from "@/components/post-job/use-draft-autosave";
-import { useStepNavigation } from "@/components/post-job/use-step-navigation";
+import { useStepContinue, useStepNavigation } from "@/components/post-job/use-step-navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,6 +54,7 @@ function toPatch(values: {
  */
 export function ServicesStep() {
   const goToStep = useStepNavigation();
+  const { nextRoute, continueLabel } = useStepContinue(STEP);
   const draft = useJobDraftStore((state) => state.draft);
   const patchDraft = useJobDraftStore((state) => state.patchDraft);
   const completeStep = useJobDraftStore((state) => state.completeStep);
@@ -84,7 +85,7 @@ export function ServicesStep() {
     autosave.cancel();
     patchDraft(toPatch(output));
     completeStep(STEP);
-    goToStep(stepRoute(STEP + 1));
+    goToStep(nextRoute());
   }
 
   function onBack() {
@@ -105,6 +106,7 @@ export function ServicesStep() {
       description={COPY.description}
       onSubmit={form.handleSubmit(onValid, focusFirstError(FIELD_ORDER, form.setFocus))}
       onBack={onBack}
+      continueLabel={continueLabel}
       summary={<JobSummaryPanel draft={{ ...draft, ...toPatch(values) }} currentStep={STEP} />}
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
